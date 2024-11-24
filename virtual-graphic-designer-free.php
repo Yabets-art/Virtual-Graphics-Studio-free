@@ -1,11 +1,11 @@
 <?php
 /**
- * Plugin Name: Virtual Graphic Designer - Free
- * Plugin URI: https://example.com/virtual-graphic-designer-free
+ * Plugin Name: Virtual Graphic Designer
+ * Plugin URI: unknown
  * Description: A free tool to create logos, banners, YouTube thumbnails, social media posts, and communicate with an AI assistant.
  * Version: 1.0
- * Author: Your Name
- * Author URI: https://example.com
+ * Author: Y and C
+ * Author URI: unknown
  * License: GPL2
  */
 
@@ -24,12 +24,13 @@ require_once VGD_PLUGIN_DIR . 'includes/class-youtube.php';
 require_once VGD_PLUGIN_DIR . 'includes/class-banner.php';
 require_once VGD_PLUGIN_DIR . 'includes/class-posts.php';
 require_once VGD_PLUGIN_DIR . 'includes/class-ai-chat.php';
+require_once VGD_PLUGIN_DIR . 'includes/class-setting.php';
 
 // Add Admin Menu
 function vgd_add_menu() {
     add_menu_page(
         'Virtual Graphic Designer',
-        'Virtual Graphic Designer',
+        'VGD',
         'manage_options',
         'virtual-graphic-designer',
         'vgd_dashboard_page',
