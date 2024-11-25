@@ -1,0 +1,25 @@
+logo = {
+{
+    "background-color": "black",
+    "color": "black"
+}
+};
+
+banner = {
+{
+    "color": "black"
+}
+};
+
+youtube = {
+{
+    "background-color": "black"
+}
+};
+
+body = {
+{
+    "background-color": "black"
+}
+};
+
