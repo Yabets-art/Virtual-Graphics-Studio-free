@@ -58,6 +58,7 @@ function vgd_dashboard_page() {
     $current_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'dashboard';
 
     // Navigation
+    echo '<div class="vgd-body">';
     echo '<nav class="nav-tab-wrapper vgd-nav-bar">';
     echo '<a href="?page=virtual-graphic-designer&tab=dashboard" class="nav-tab ' . ($current_tab === 'dashboard' ? 'nav-tab-active' : '') . '">' . __('Home', 'vgd') . '</a>';
     echo '<a href="?page=virtual-graphic-designer&tab=brand" class="nav-tab ' . ($current_tab === 'brand' ? 'nav-tab-active' : '') . '">' . __('Brand (Logo & Business Card)', 'vgd') . '</a>';
