@@ -39,7 +39,7 @@ function vgd_autoload_classes() {
 }
 add_action('plugins_loaded', 'vgd_autoload_classes');
 
-// Add Admin Menu
+// Add Admin Menu with additional tools
 function vgd_add_menu() {
     add_menu_page(
         __('Virtual Graphic Designer', 'vgd'), // Page title
@@ -50,6 +50,89 @@ function vgd_add_menu() {
         'dashicons-format-image', // Icon
         10 // Position
     );
+
+    // Get the configuration from config.txt
+    $config = get_config();
+
+        // Home page
+    if (isset($config['home']) && $config['home'] === 'enable') {
+        add_submenu_page(
+            'virtual-graphic-designer',
+            __('Home', 'vgd'),
+            __('Home', 'vgd'),
+            'manage_options',
+            'virtual-graphic-designer',
+            'vgd_dashboard_page'
+        );
+    }
+
+    // Check the configuration to see if the tabs are enabled
+    if (isset($config['logo']) && $config['logo'] === 'enable') {
+        add_submenu_page(
+            'virtual-graphic-designer',
+            __('Brand (Logo & Business Card)', 'vgd'),
+            __('Brand', 'vgd'),
+            'manage_options',
+            'vgd-brand',
+            'vgd_render_brand_tab'
+        );
+    }
+
+    if (isset($config['youtube']) && $config['youtube'] === 'enable') {
+        add_submenu_page(
+            'virtual-graphic-designer',
+            __('YouTube (Thumbnail & Banner)', 'vgd'),
+            __('YouTube', 'vgd'),
+            'manage_options',
+            'vgd-youtube',
+            'vgd_render_youtube_tab'
+        );
+    }
+
+    if (isset($config['banner']) && $config['banner'] === 'enable') {
+        add_submenu_page(
+            'virtual-graphic-designer',
+            __('Banner (Event & Business)', 'vgd'),
+            __('Banner', 'vgd'),
+            'manage_options',
+            'vgd-banner',
+            'vgd_render_banner_tab'
+        );
+    }
+
+    if (isset($config['post']) && $config['post'] === 'enable') {
+        add_submenu_page(
+            'virtual-graphic-designer',
+            __('Social Media Posts', 'vgd'),
+            __('Social Media', 'vgd'),
+            'manage_options',
+            'vgd-posts',
+            'vgd_render_posts_tab'
+        );
+    }
+
+    if (isset($config['chat']) && $config['chat'] === 'enable') {
+        add_submenu_page(
+            'virtual-graphic-designer',
+            __('AI Chat', 'vgd'),
+            __('AI Chat', 'vgd'),
+            'manage_options',
+            'vgd-ai-chat',
+            'vgd_render_ai_chat_tab'
+        );
+    }
+
+    // Settings page
+    if (isset($config['setting']) && $config['setting'] === 'enable') {
+        add_submenu_page(
+            'virtual-graphic-designer',
+            __('Settings', 'vgd'),
+            __('Settings', 'vgd'),
+            'manage_options',
+            'vgd-settings',
+            'vgd_settings_page'
+        );
+    }
 }
 add_action('admin_menu', 'vgd_add_menu');
 
@@ -58,15 +141,7 @@ function vgd_dashboard_page() {
     $current_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'dashboard';
 
     // Navigation
-    echo '<div class="vgd-body">';
-    echo '<nav class="nav-tab-wrapper vgd-nav-bar">';
-    echo '<a href="?page=virtual-graphic-designer&tab=dashboard" class="nav-tab ' . ($current_tab === 'dashboard' ? 'nav-tab-active' : '') . '">' . __('Home', 'vgd') . '</a>';
-    echo '<a href="?page=virtual-graphic-designer&tab=brand" class="nav-tab ' . ($current_tab === 'brand' ? 'nav-tab-active' : '') . '">' . __('Brand (Logo & Business Card)', 'vgd') . '</a>';
-    echo '<a href="?page=virtual-graphic-designer&tab=youtube" class="nav-tab ' . ($current_tab === 'youtube' ? 'nav-tab-active' : '') . '">' . __('YouTube (Thumbnail & Banner)', 'vgd') . '</a>';
-    echo '<a href="?page=virtual-graphic-designer&tab=banner" class="nav-tab ' . ($current_tab === 'banner' ? 'nav-tab-active' : '') . '">' . __('Banner (Event & Business)', 'vgd') . '</a>';
-    echo '<a href="?page=virtual-graphic-designer&tab=posts" class="nav-tab ' . ($current_tab === 'posts' ? 'nav-tab-active' : '') . '">' . __('Social Media Posts', 'vgd') . '</a>';
-    echo '<a href="?page=virtual-graphic-designer&tab=ai-chat" class="nav-tab ' . ($current_tab === 'ai-chat' ? 'nav-tab-active' : '') . '">' . __('AI Chat', 'vgd') . '</a>';
-    echo '</nav>';
+    navbar_function();
 
     // Content based on tab
     echo '<div class="vgd-content">';
@@ -91,15 +166,63 @@ function vgd_dashboard_page() {
             break;
     }
     echo '</div>';
+    echo '</div>';
 }
 
-
-
-
-
-
-// Enqueue styles for hover effects and improved nav bar
-function vgd_enqueue_styles() {
-    wp_enqueue_style('vgd-style', VGD_PLUGIN_URL . 'assets/css/style.css');
+// Enqueue styles dynamically for plugin pages
+function vgd_enqueue_styles($hook_suffix) {
+    wp_enqueue_style('vgd-main-style', VGD_PLUGIN_URL . 'assets/css/style.css');
+    wp_enqueue_style('vgd-settings-style', VGD_PLUGIN_URL . 'assets/css/setting.css');
+    wp_enqueue_style('vgd-dashboard-style', VGD_PLUGIN_URL . 'assets/css/home.css');
+    wp_enqueue_style('vgd-nav-style', VGD_PLUGIN_URL . 'assets/css/nav.css');
+    wp_enqueue_style('vgd-brannd-style', VGD_PLUGIN_URL . 'assets/css/brannd.css');
 }
 add_action('admin_enqueue_scripts', 'vgd_enqueue_styles');
+
+// Navbar function for navigation
+function navbar_function() {
+    $current_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'dashboard';
+    echo '<div class="vgd-body">';
+    echo '<nav class="nav-tab-wrapper vgd-nav-bar">';
+    echo '<a href="?page=virtual-graphic-designer&tab=dashboard" class="nav-tab ' . ($current_tab === 'dashboard' ? 'nav-tab-active' : '') . '">' . __('Home', 'vgd') . '</a>';
+
+    // Get the configuration from config.txt
+    $config = get_config();
+
+    // Display only if enabled in settings
+    if (isset($config['logo']) && $config['logo'] === 'enable') {
+        echo '<a href="?page=virtual-graphic-designer&tab=brand" class="nav-tab ' . ($current_tab === 'brand' ? 'nav-tab-active' : '') . '">' . __('Brand (Logo & Business Card)', 'vgd') . '</a>';
+    }
+
+    if (isset($config['youtube']) && $config['youtube'] === 'enable') {
+        echo '<a href="?page=virtual-graphic-designer&tab=youtube" class="nav-tab ' . ($current_tab === 'youtube' ? 'nav-tab-active' : '') . '">' . __('YouTube (Thumbnail & Banner)', 'vgd') . '</a>';
+    }
+
+    if (isset($config['banner']) && $config['banner'] === 'enable') {
+        echo '<a href="?page=virtual-graphic-designer&tab=banner" class="nav-tab ' . ($current_tab === 'banner' ? 'nav-tab-active' : '') . '">' . __('Banner (Event & Business)', 'vgd') . '</a>';
+    }
+
+    if (isset($config['post']) && $config['post'] === 'enable') {
+        echo '<a href="?page=virtual-graphic-designer&tab=posts" class="nav-tab ' . ($current_tab === 'posts' ? 'nav-tab-active' : '') . '">' . __('Social Media Posts', 'vgd') . '</a>';
+    }
+
+    if (isset($config['chat']) && $config['chat'] === 'enable') {
+        echo '<a href="?page=virtual-graphic-designer&tab=ai-chat" class="nav-tab ' . ($current_tab === 'ai-chat' ? 'nav-tab-active' : '') . '">' . __('AI Chat', 'vgd') . '</a>';
+    }
+
+    echo '</nav>';
+}
+
+
+function my_gallery_plugin_enqueue_scripts() {
+    // Swiper.js (or your preferred library)
+    wp_enqueue_style('swiper-css', 'https://unpkg.com/swiper/swiper-bundle.min.css');
+    wp_enqueue_script('swiper-js', 'https://unpkg.com/swiper/swiper-bundle.min.js', array('jquery'), null, true);
+
+    // Custom styles and scripts for the gallery
+    wp_enqueue_style('my-gallery-style', VGD_PLUGIN_URL . 'assets/css/gallery.css');
+    wp_enqueue_script('my-gallery-script', VGD_PLUGIN_URL . 'assets/js/gallery.js', array('swiper-js'), null, true);
+}
+add_action('wp_enqueue_scripts', 'my_gallery_plugin_enqueue_scripts');
+
+?>
