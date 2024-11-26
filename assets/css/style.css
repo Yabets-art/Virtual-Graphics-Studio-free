@@ -1,3 +1,9 @@
+<<<<<<< HEAD
+/* Apply a dark blue gradient to the body background */
+.body {
+    background: linear-gradient(135deg, #001f3d, #004f7c); /* Dark blue gradient */
+    color: white; /* White text for contrast */
+=======
 @import url(./home.css);
 /* General Body Styling */
 .vgd-body {
@@ -92,4 +98,5 @@
         text-align: left;
         margin: 5px 0;
     }
+>>>>>>> d2cb0739932a404e964ff609af72a610a4b68793
 }

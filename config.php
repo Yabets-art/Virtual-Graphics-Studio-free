@@ -19,18 +19,18 @@ class ConfigManager
     {
         $content = file_get_contents($this->filePath);
         $config = [];
-        preg_match_all('/(\w+)\s*=\s*{(.*?)}/s', $content, $matches, PREG_SET_ORDER);
 
-        foreach ($matches as $match) {
-            $key = trim($match[1]);
-            $value = trim($match[2]);
+        // Parse line by line: format "key=value"
+        $lines = explode("\n", $content);
+        foreach ($lines as $line) {
+            $line = trim($line);
 
-            // Decode JSON values if valid, otherwise treat as plain text.
-            if ($this->isJson($value)) {
-                $config[$key] = json_decode($value, true);
-            } else {
-                $config[$key] = $value;
+            if (empty($line) || strpos($line, '=') === false) {
+                continue; // Skip empty or invalid lines
             }
+
+            list($key, $value) = explode('=', $line, 2);
+            $config[trim($key)] = trim($value);
         }
 
         return $config;
@@ -43,12 +43,7 @@ class ConfigManager
     {
         $content = "";
         foreach ($config as $key => $value) {
-            if (is_array($value)) {
-                $json = json_encode($value, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-                $content .= "$key = {\n$json\n};\n\n";
-            } else {
-                $content .= "$key = {\n$value\n};\n\n";
-            }
+            $content .= "$key=$value\n";
         }
 
         file_put_contents($this->filePath, $content);
@@ -64,14 +59,6 @@ class ConfigManager
         foreach ($newConfig as $key => $value) {
             if (!array_key_exists($key, $config)) {
                 $config[$key] = $value;
-            } else {
-                if (is_array($config[$key]) && is_array($value)) {
-                   
-                    $config[$key] = array_merge($config[$key], $value);
-                } else {
-                
-                    $config[$key] = $value;
-                }
             }
         }
 
@@ -87,31 +74,28 @@ class ConfigManager
         $config[$key] = $value;
         $this->writeConfig($config);
     }
-
-    /**
-     * Helper method to check if a string is valid JSON.
-     */
-    private function isJson($string)
-    {
-        json_decode($string);
-        return (json_last_error() === JSON_ERROR_NONE);
-    }
 }
 
-
+// // Example Usage
 // try {
 //     $configManager = new ConfigManager('config.txt');
 
 //     // Add or update the config with new data
 //     $newConfig = [
-//         'logo' => ['background-color' => "black", 'color' => "black"],
-//         'banner' => ['color' => "black"],
-//         'youtube' => ['background-color' => "black"],
-//         'body' => ['background-color' => "black"],
+//         'logo' => 'enable',
+//         'banner' => 'enable',
+//         'chat' => 'desable',
+//         'home' => 'enable',
+//         'post' => 'enable',
+//         'youtube' => 'enable',
+//         'setting' => 'enable',
 //     ];
 
-//     // This will add new keys or merge with existing ones
+//     // Add new keys or update existing ones
 //     $configManager->addNewKeys($newConfig);
+
+//     // Output the updated config
+//     var_dump($configManager->readConfig());
 
 // } catch (Exception $e) {
 //     echo "Error: " . $e->getMessage();
