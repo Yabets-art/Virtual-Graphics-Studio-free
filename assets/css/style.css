@@ -1,0 +1,95 @@
+@import url(./home.css);
+/* General Body Styling */
+.vgd-body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #000033; /* Dark blue background */
+    color: #ffffff; /* White text for readability */
+    height: 100vh;
+}
+#wpcontent{
+    padding-left: 0px !important;
+}
+/* Navigation Bar */
+.vgd-nav-bar {
+    display: flex;
+
+    justify-content: flex-start;
+    background-color: #000033; /* Dark blue matching the body */
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4); /* Enhanced shadow for more depth */
+}
+
+/* Nav Links */
+.vgd-nav-bar .nav-tab {
+    text-decoration: none;
+    background-color: #000066; /* Slightly lighter blue */
+    padding: 10px 20px;
+    margin: 0 5px;
+    border-radius: 10px; /* Curved borders for nav links */
+    color: #dce2ea; /* Light steel blue for unselected links */
+    font-weight: normal;
+    transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+/* Hover Effect */
+.vgd-nav-bar .nav-tab:hover {
+    background: rgba(255, 255, 255, 0.1); /* Slight white overlay on hover */
+    color: #f0f8ff; /* Lighter blue on hover */
+    transform: scale(1.05); /* Slight zoom-in effect on hover */
+}
+
+/* Active Nav Link */
+.vgd-nav-bar .nav-tab-active {
+    background-color: #001a66; /* Brighter dark blue for the active tab */
+    color: #ffffff; /* White text for the active tab */
+    border: 2px solid #ffffff; /* White border for the active tab */
+    transition: transform 0.3s ease-in-out;
+    transform: scale(1.1); /* Subtle zoom effect for active state */
+}
+
+/* Content Area */
+.vgd-content {
+    background-color: #000033; /* Dark blue matching the body */
+    padding: 20px;
+    margin-top: 10px;
+    border-radius: 10px; /* Curved border for the content area */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4); /* Enhanced shadow for depth */
+    color: #ffffff;
+    font-size: 16px;
+    line-height: 1.6; /* Improved readability */
+}
+
+/* Accessibility: Focus Outline */
+.vgd-nav-bar .nav-tab:focus {
+    outline: 3px dashed #ffffff; /* Clear focus outline for accessibility */
+    outline-offset: 3px;
+    background-color: #001a66; /* Match active background for focus */
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .vgd-nav-bar {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    .vgd-nav-bar .nav-tab {
+        margin: 5px 0;
+    }
+}
+
+/* Collapsible Mobile Menu (optional enhancement) */
+@media (max-width: 600px) {
+    .vgd-nav-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 15px;
+    }
+    .vgd-nav-bar .nav-tab {
+        width: 100%;
+        text-align: left;
+        margin: 5px 0;
+    }
+}
