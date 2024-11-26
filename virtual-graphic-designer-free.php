@@ -212,4 +212,17 @@ function navbar_function() {
 
     echo '</nav>';
 }
+
+
+function my_gallery_plugin_enqueue_scripts() {
+    // Swiper.js (or your preferred library)
+    wp_enqueue_style('swiper-css', 'https://unpkg.com/swiper/swiper-bundle.min.css');
+    wp_enqueue_script('swiper-js', 'https://unpkg.com/swiper/swiper-bundle.min.js', array('jquery'), null, true);
+
+    // Custom styles and scripts for the gallery
+    wp_enqueue_style('my-gallery-style', VGD_PLUGIN_URL . 'assets/css/gallery.css');
+    wp_enqueue_script('my-gallery-script', VGD_PLUGIN_URL . 'assets/js/gallery.js', array('swiper-js'), null, true);
+}
+add_action('wp_enqueue_scripts', 'my_gallery_plugin_enqueue_scripts');
+
 ?>
