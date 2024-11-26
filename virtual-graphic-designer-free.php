@@ -38,8 +38,7 @@ function vgd_autoload_classes() {
     }
 }
 add_action('plugins_loaded', 'vgd_autoload_classes');
-
-// Add Admin Menu
+// Add Admin Menu with additional tools
 function vgd_add_menu() {
     add_menu_page(
         __('Virtual Graphic Designer', 'vgd'), // Page title
@@ -49,6 +48,66 @@ function vgd_add_menu() {
         'vgd_dashboard_page', // Callback function
         'dashicons-format-image', // Icon
         10 // Position
+    );
+
+    // Submenu Pages for different tools
+    add_submenu_page(
+        'virtual-graphic-designer', // Parent slug
+        __('Home', 'vgd'), // Page title
+        __('Home', 'vgd'), // Menu title
+        'manage_options', // Capability
+        'virtual-graphic-designer', // Slug
+        'vgd_dashboard_page' // Callback function
+    );
+    add_submenu_page(
+        'virtual-graphic-designer', // Parent slug
+        __('Brand (Logo & Business Card)', 'vgd'), // Page title
+        __('Brand', 'vgd'), // Menu title
+        'manage_options', // Capability
+        'vgd-brand', // Slug
+        'vgd_render_brand_tab' // Callback function
+    );
+    add_submenu_page(
+        'virtual-graphic-designer', // Parent slug
+        __('YouTube (Thumbnail & Banner)', 'vgd'), // Page title
+        __('YouTube', 'vgd'), // Menu title
+        'manage_options', // Capability
+        'vgd-youtube', // Slug
+        'vgd_render_youtube_tab' // Callback function
+    );
+    add_submenu_page(
+        'virtual-graphic-designer', // Parent slug
+        __('Banner (Event & Business)', 'vgd'), // Page title
+        __('Banner', 'vgd'), // Menu title
+        'manage_options', // Capability
+        'vgd-banner', // Slug
+        'vgd_render_banner_tab' // Callback function
+    );
+    add_submenu_page(
+        'virtual-graphic-designer', // Parent slug
+        __('Social Media Posts', 'vgd'), // Page title
+        __('Social Media', 'vgd'), // Menu title
+        'manage_options', // Capability
+        'vgd-posts', // Slug
+        'vgd_render_posts_tab' // Callback function
+    );
+    add_submenu_page(
+        'virtual-graphic-designer', // Parent slug
+        __('AI Chat', 'vgd'), // Page title
+        __('AI Chat', 'vgd'), // Menu title
+        'manage_options', // Capability
+        'vgd-ai-chat', // Slug
+        'vgd_render_ai_chat_tab' // Callback function
+    );
+
+    // Settings page
+    add_submenu_page(
+        'virtual-graphic-designer', // Parent slug
+        __('Settings', 'vgd'), // Page title
+        __('Settings', 'vgd'), // Menu title
+        'manage_options', // Capability
+        'vgd-settings', // Slug
+        'vgd_settings_page' // Callback function
     );
 }
 add_action('admin_menu', 'vgd_add_menu');

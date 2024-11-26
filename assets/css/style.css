@@ -1,0 +1,5 @@
+/* Apply a dark blue gradient to the body background */
+.body {
+    background: linear-gradient(135deg, #001f3d, #004f7c); /* Dark blue gradient */
+    color: white; /* White text for contrast */
+}
