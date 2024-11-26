@@ -1,0 +1,71 @@
+.vgd-card-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr); /* Exactly 5 cards per row */
+    gap: 20px; /* Space between cards */
+    margin-top: 20px;
+}
+
+.vgd-card {
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.vgd-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.vgd-card-content h4 {
+    margin-bottom: 10px;
+    font-size: 18px;
+    color: #333;
+}
+
+.vgd-card-content p {
+    font-size: 14px;
+    color: #666;
+}
+
+.vgd-add-card {
+    background-color: #f0f8ff;
+    border: 2px dashed #00aaff;
+}
+
+.vgd-add-card:hover {
+    background-color: #e6f7ff;
+    border-color: #007acc;
+}
+
+.vgd-add-card h4 {
+    color: #007acc;
+}
+
+/* Responsive adjustments for smaller screens */
+@media screen and (max-width: 1200px) {
+    .vgd-card-grid {
+        grid-template-columns: repeat(4, 1fr); /* Reduce to 4 cards per row */
+    }
+}
+
+@media screen and (max-width: 900px) {
+    .vgd-card-grid {
+        grid-template-columns: repeat(3, 1fr); /* Reduce to 3 cards per row */
+    }
+}
+
+@media screen and (max-width: 600px) {
+    .vgd-card-grid {
+        grid-template-columns: repeat(2, 1fr); /* Reduce to 2 cards per row */
+    }
+}
+
+@media screen and (max-width: 400px) {
+    .vgd-card-grid {
+        grid-template-columns: 1fr; /* Single card per row */
+    }
+}
