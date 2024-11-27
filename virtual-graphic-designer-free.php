@@ -176,6 +176,13 @@ function vgd_enqueue_styles($hook_suffix) {
     wp_enqueue_style('vgd-dashboard-style', VGD_PLUGIN_URL . 'assets/css/home.css');
     wp_enqueue_style('vgd-nav-style', VGD_PLUGIN_URL . 'assets/css/nav.css');
     wp_enqueue_style('vgd-brannd-style', VGD_PLUGIN_URL . 'assets/css/brannd.css');
+    wp_enqueue_style('swiper-css', 'https://unpkg.com/swiper/swiper-bundle.min.css');
+    wp_enqueue_script('swiper-js', 'https://unpkg.com/swiper/swiper-bundle.min.js', array('jquery'), null, true);
+
+    // Custom styles and scripts for the gallery
+    wp_enqueue_style('my-gallery-style', VGD_PLUGIN_URL . 'assets/css/gallery-style.css');
+    wp_enqueue_script('my-gallery-script', VGD_PLUGIN_URL . 'assets/js/gallery-script.js', array('swiper-js'), null, true);
+
 }
 add_action('admin_enqueue_scripts', 'vgd_enqueue_styles');
 

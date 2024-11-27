@@ -1,4 +1,4 @@
-home=enable
+home=disable
 logo=enable
 banner=enable
 chat=enable
