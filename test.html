@@ -1,206 +1,1622 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Editable Logo/Business Card Editor</title>
-  <script src="https://cdn.jsdelivr.net/npm/fabric@6.4.3/dist/index.js"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    .context-menu {
-      position: absolute;
-      background: white;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      border: 1px solid #ddd;
-      z-index: 1000;
-      display: none;
-    }
-    .context-menu button {
-      display: block;
-      width: 100%;
-      padding: 8px 12px;
-      text-align: left;
-      border: none;
-      background: none;
-      cursor: pointer;
-    }
-    .context-menu button:hover {
-      background: #f3f3f3;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Graphics Studio</title>
+    <script src="https://unpkg.com/konva@9.2.0/konva.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.12.17/paper-full.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #f0f0f0;
+        }
+
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* Top Navigation Bar */
+        .top-nav {
+            display: flex;
+            align-items: center;
+            background: #ffffff;
+            height: 48px;
+            padding: 0 16px;
+            border-bottom: 1px solid #e0e0e0;
+            z-index: 1000;
+        }
+
+        .menu-button {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            background: none;
+            cursor: pointer;
+            margin-right: 16px;
+        }
+
+        .top-nav-section {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0 8px;
+            height: 100%;
+        }
+
+        .resize-button {
+            background: #ffd700;
+            color: #000;
+            border-radius: 16px;
+            padding: 6px 12px;
+        }
+
+        .pro-button {
+            background: linear-gradient(45deg, #9333ea, #7e22ce);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 16px;
+            cursor: pointer;
+        }
+
+        /* Main Content Layout */
+        .main-content {
+            margin-left: 48px;
+            margin-bottom: 48px;
+            height: calc(100vh - 96px);
+            overflow: hidden;
+        }
+
+        /* Primary Sidebar */
+        .sidebar {
+            width: 240px;
+            background: #ffffff;
+            height: 100%;
+            transition: width 0.3s ease;
+            flex-shrink: 0;
+            z-index: 100;
+            position: fixed;
+            top: 48px;
+            left: 0;
+        }
+
+        .sidebar.collapsed {
+            width: 60px;
+        }
+
+        .sidebar.collapsed .sidebar-button span {
+            display: none;
+        }
+
+        .sidebar-button {
+          width: 100%;
+            padding: 12px 16px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #333;
+            transition: background-color 0.2s;
+        }
+
+        .sidebar-button:hover {
+            background-color: #f5f5f5;
+        }
+
+        .sidebar-button i {
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Secondary Sidebar */
+        .secondary-sidebar {
+            width: 240px;
+            background: #ffffff;
+            height: calc(100vh - 48px);
+            position: fixed;
+            left: 240px;
+            top: 48px;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            z-index: 90;
+            border-right: 1px solid #e0e0e0;
+            overflow-y: auto;
+        }
+
+        .secondary-sidebar.active {
+            transform: translateX(0);
+        }
+
+        /* When primary sidebar is collapsed */
+        .sidebar.collapsed + .secondary-sidebar {
+            left: 60px;
+        }
+
+        /* Canvas Area */
+
+
+        /* Canvas Container */
+        .canvas-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f5f5f5;
+            cursor: default;
+        }
+
+        .canvas-container.select {
+            cursor: default !important;
+        }
+
+        .canvas-container.move {
+            cursor: grab !important;
+        }
+
+        .canvas-container.move:active {
+            cursor: grabbing !important;
+        }
+
+        .canvas-container.drawing {
+            cursor: crosshair !important;
+        }
+
+        .canvas-container.text {
+            cursor: text !important;
+        }
+
+        .canvas-container.panning {
+            cursor: grab !important;
+        }
+
+        .canvas-container.panning:active {
+            cursor: grabbing !important;
+        }
+
+        /* Canvas */
+        #mainCanvas {
+            background: #ffffff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        #paperCanvas {
+            width: 100%;
+            height: 100%;
+            border: 1px solid #e0e0e0;
+        }
+
+        /* Tools Panel - Vertical */
+        .tools-panel {
+            position: fixed;
+            left: 0;
+            top: 48px;
+            bottom: 0;
+            width: 48px;
+            background: #ffffff;
+            padding: 8px 0;
+            border-right: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            z-index: 1000;
+        }
+
+        .tool-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 8px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .tool-group:last-child {
+            border-bottom: none;
+        }
+
+        .tool-btn {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            background: none;
+            cursor: pointer;
+            border-radius: 4px;
+            color: #333;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .tool-btn:hover {
+            background: #f5f5f5;
+            color: #2196f3;
+        }
+
+        .tool-btn.active {
+            background: #e3f2fd;
+            color: #2196f3;
+        }
+
+        /* Properties Panel - Left Side */
+        .properties-panel {
+            position: fixed;
+            left: 48px;
+            top: 48px;
+            bottom: 48px;
+            width: 280px;
+            background: #ffffff;
+            border-right: 1px solid #e0e0e0;
+            padding: 16px;
+            overflow-y: auto;
+            z-index: 1000;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+
+        .properties-panel.active {
+            transform: translateX(0);
+        }
+
+        /* Bottom Controls Bar */
+        .bottom-controls {
+            position: fixed;
+            left: 48px;
+            right: 0;
+            bottom: 0;
+            height: 48px;
+            background: #ffffff;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            z-index: 1000;
+        }
+
+        .history-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .zoom-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .zoom-level {
+            font-size: 14px;
+            color: #666;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .control-btn {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            background: #ffffff;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .control-btn:hover {
+            background: #f5f5f5;
+            border-color: #2196f3;
+            color: #2196f3;
+        }
+
+        .control-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Shape Menu */
+        .shape-menu {
+            display: none;
+            position: absolute;
+            background: white;
+            padding: 8px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+
+        /* Controls Bar */
+        .controls-bar {
+            position: absolute;
+            top: 450px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ffffff;
+            padding: 8px 16px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .zoom-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .zoom-button {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: #f0f0f0;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+
+        .zoom-button:hover {
+            background: #e0e0e0;
+        }
+
+        #zoomValue {
+            min-width: 60px;
+            text-align: center;
+        }
+
+        /* History Controls */
+        .history-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: 16px;
+            border-left: 1px solid #e0e0e0;
+            padding-left: 16px;
+        }
+
+        .history-button {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: #f0f0f0;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+
+        .history-button:hover:not(:disabled) {
+            background: #e0e0e0;
+        }
+
+        .history-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Text Panel Specific Styles */
+        #textPanel .template-item {
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        #textPanel .template-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        #textPanel .template-preview {
+            width: 100%;
+            height: 120px;
+            background: #ffffff;
+            border: 1px solid #f0f0f0;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 8px;
+        }
+
+        .text-preview {
+            width: 100%;
+            height: 120px;
+            background: #ffffff;
+            border: 1px solid #f0f0f0;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 8px;
+        }
+
+        .text-panel-item .title {
+            font-size: 14px;
+            color: #333;
+            text-align: center;
+            margin-top: 8px;
+        }
+
+        /* Text Editing Styles */
+        .canvas-wrapper .editing {
+            border: 1px dashed #2196f3;
+        }
+
+        .text-controls {
+            position: absolute;
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ffffff;
+            padding: 8px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            gap: 8px;
+            z-index: 1000;
+        }
+
+        .text-control-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .text-control-button {
+            padding: 6px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            border-radius: 4px;
+            color: #333;
+            transition: background-color 0.2s;
+        }
+
+        .text-control-button:hover {
+            background-color: #f5f5f5;
+        }
+
+        .text-control-button.active {
+            background-color: #e3f2fd;
+            color: #2196f3;
+        }
+
+        /* Text Editing Styles */
+        .canvas-wrapper .editing {
+            border: 1px dashed #2196f3;
+        }
+
+        #textPanel .template-item {
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        #textPanel .template-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        #textPanel .template-preview {
+            width: 100%;
+            height: 120px;
+            background: #ffffff;
+            border: 1px solid #f0f0f0;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 8px;
+        }
+
+        /* Properties Editor Panel */
+        .properties-editor {
+            position: fixed;
+            right: 0;
+            top: 48px;
+            width: 300px;
+            height: calc(100vh - 48px);
+            background: #ffffff;
+            border-left: 1px solid #e0e0e0;
+            padding: 20px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            touch-action: pan-y;
+        }
+
+        .properties-editor.active {
+            transform: translateX(0);
+        }
+
+        /* Make inputs more touch-friendly */
+        .property-control input[type="number"],
+        .property-control input[type="text"],
+        .property-control select {
+            min-height: 36px;
+            padding: 8px 12px;
+            font-size: 14px;
+        }
+
+        .property-control input[type="color"] {
+            min-height: 40px;
+        }
+
+        .property-control input[type="range"] {
+            height: 36px;
+            padding: 8px 0;
+        }
+
+        .property-group {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .property-group h4 {
+            color: #2196f3;
+            font-size: 14px;
+            margin-bottom: 15px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .property-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            gap: 12px;
+        }
+
+        .property-label {
+            flex: 1;
+            font-size: 13px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .property-control {
+            flex: 1.5;
+        }
+
+        .property-control input[type="number"],
+        .property-control input[type="text"],
+        .property-control select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            background: white;
+            font-size: 13px;
+            transition: border-color 0.2s;
+        }
+
+        .property-control input:focus,
+        .property-control select:focus {
+            border-color: #2196f3;
+            outline: none;
+        }
+
+        .property-control input[type="color"] {
+            width: 100%;
+            height: 35px;
+            padding: 2px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            background: white;
+        }
+
+        .property-control input[type="range"] {
+            width: 100%;
+            margin: 8px 0;
+        }
+
+        /* Transform Controls Grid */
+        .transform-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .transform-grid .property-row {
+            margin-bottom: 8px;
+        }
+
+        /* Style Controls */
+        .style-controls {
+            display: grid;
+            gap: 12px;
+        }
+
+        /* Collapsible Sections */
+        .section-header {
+            background: #f0f0f0;
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .section-header:hover {
+            background: #e3f2fd;
+        }
+
+        .section-header i {
+            transition: transform 0.3s;
+        }
+
+        .section-header.collapsed i {
+            transform: rotate(-90deg);
+        }
+
+        .section-content {
+            transition: max-height 0.3s ease-out;
+            max-height: 1000px;
+            overflow: hidden;
+        }
+
+        .section-content.collapsed {
+            max-height: 0;
+        }
+
+        /* Add context menu styles */
+        .context-menu {
+            position: fixed;
+            background: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            border-radius: 4px;
+            padding: 5px 0;
+            min-width: 150px;
+            z-index: 1000;
+            display: none;
+        }
+        .context-menu-item {
+            padding: 8px 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #333;
+        }
+        .context-menu-item:hover {
+            background: #f0f0f0;
+        }
+        .context-menu-separator {
+            height: 1px;
+            background: #ddd;
+            margin: 5px 0;
+        }
+        
+    </style>
 </head>
-<body class="flex h-screen bg-gray-100">
+<body>
+    <div class="app-container">
+        <!-- Top Navigation -->
+        <nav class="top-nav">
 
-  <!-- Sidebar -->
-  <div class="w-1/4 bg-white shadow-md flex flex-col p-4">
-    <h2 class="text-lg font-semibold mb-4">Actions</h2>
-    <button class="w-full py-2 px-4 bg-blue-500 text-white text-sm rounded hover:bg-blue-600" onclick="addText()">Add Text</button>
-    <button class="w-full py-2 px-4 bg-green-500 text-white text-sm rounded hover:bg-green-600" onclick="addRectangle()">Add Rectangle</button>
-    <button class="w-full py-2 px-4 bg-yellow-500 text-white text-sm rounded hover:bg-yellow-600" onclick="addCircle()">Add Circle</button>
-    <button class="w-full py-2 px-4 bg-gray-500 text-white text-sm rounded hover:bg-gray-600" onclick="undo()">Undo</button>
-    <button class="w-full py-2 px-4 bg-gray-500 text-white text-sm rounded hover:bg-gray-600" onclick="redo()">Redo</button>
-  </div>
+            <div class="top-nav-section" style="margin-left: auto;">
+                <button class="pro-button">
+                    <i class="fas fa-crown"></i>
+                    publish
+                </button>
+                <button class="top-nav-button">
+                    <i class="fas fa-share"></i>
+                    Share
+                </button>
+            </div>
+        </nav>
 
-  <!-- Main Editor Area -->
-  <div class="flex-1 flex justify-center items-center bg-white relative">
-    <canvas id="canvas" width="800" height="600"></canvas>
-    <!-- Right-click context menu -->
-    <div id="contextMenu" class="context-menu">
-      <button onclick="deleteSelected()">Delete</button>
-      <button onclick="bringToFront()">Bring to Front</button>
-      <button onclick="sendToBack()">Send to Back</button>
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Canvas Container -->
+            <div class="canvas-container">
+                <canvas  id="mainCanvas" width="800" height="600"></canvas>
+                <canvas id="paperCanvas" width="800" height="600" resize></canvas>
+            </div>
+            
+            <!-- Tools Panel -->
+            <div class="tools-panel">
+                <div class="tool-group">
+                    <button class="tool-btn" data-tool="select" title="Select"><i class="fas fa-mouse-pointer"></i></button>
+                    <button class="tool-btn" data-tool="text" title="Add Text"><i class="fas fa-text-height"></i></button>
+                    <button class="tool-btn" data-tool="shape" title="Add Shape"><i class="fas fa-shapes"></i></button>
+                    <button class="tool-btn" data-tool="draw" title="Draw"><i class="fas fa-pencil-alt"></i></button>
+                    <button class="tool-btn" data-tool="image" title="Add Image"><i class="fas fa-image"></i></button>
+                </div>
+                <div class="tool-group">
+                    <button class="tool-btn" data-action="bring-to-front" title="Bring to Front"><i class="fas fa-level-up-alt"></i></button>
+                    <button class="tool-btn" data-action="send-to-back" title="Send to Back"><i class="fas fa-level-down-alt"></i></button>
+                    <button class="tool-btn" data-action="group" title="Group"><i class="fas fa-object-group"></i></button>
+                    <button class="tool-btn" data-action="ungroup" title="Ungroup"><i class="fas fa-object-ungroup"></i></button>
+                </div>
+                <button class="tool-btn" data-tool="pan" title="Pan Tool"><i class="fas fa-hand-paper"></i></button>
+                <div class="tool-group">
+                    <button class="tool-btn" data-action="fit" title="Fit to Object"><i class="fas fa-expand-arrows-alt"></i></button>
+                    <button class="tool-btn" data-action="mask" title="Create Mask"><i class="fas fa-crop-alt"></i></button>
+                </div>
+            </div>
+
+            <!-- Shape Menu -->
+            <div class="shape-menu" id="shapeMenu">
+                <button class="tool-btn" data-shape="rect" title="Rectangle"><i class="fas fa-square"></i></button>
+                <button class="tool-btn" data-shape="circle" title="Circle"><i class="fas fa-circle"></i></button>
+                <button class="tool-btn" data-shape="triangle" title="Triangle"><i class="fas fa-play"></i></button>
+                <button class="tool-btn" data-shape="star" title="Star"><i class="fas fa-star"></i></button>
+                <button class="tool-btn" data-shape="polygon" title="Polygon"><i class="fas fa-draw-polygon"></i></button>
+            </div>
+        </div>
+        
+        <!-- Properties Editor Panel -->
+        <div class="properties-editor" id="propertiesEditor">
+            <div id="textProperties" style="display: none;">
+                <h3>Text Properties</h3>
+                <div class="property-group">
+                    <div class="text-controls-group">
+                        <label>Font Size:</label>
+                        <input type="number" id="fontSize" min="1" max="200" value="20">
+                    </div>
+                    <div class="text-controls-group">
+                        <label>Text Color:</label>
+                        <input type="color" id="textColor" value="#000000">
+                    </div>
+                    <div class="text-controls-group">
+                        <label>Font Family:</label>
+                        <select id="fontFamily">
+                            <option value="Arial">Arial</option>
+                            <option value="Helvetica">Helvetica</option>
+                            <option value="Times New Roman">Times New Roman</option>
+                            <option value="Courier New">Courier New</option>
+                        </select>
+                    </div>
+                    <div class="text-controls-group">
+                        <label>Text Curve:</label>
+                        <input type="range" id="textCurve" min="-360" max="360" value="0">
+                        <span id="curveValue">0°</span>
+                    </div>
+                    <div class="text-controls-group">
+                        <label>Curve Radius:</label>
+                        <input type="range" id="curveRadius" min="10" max="200" value="50">
+                        <span id="radiusValue">50</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="objectProperties" style="display: none;">
+                <h3 style="margin-bottom: 20px; color: #333;">Object Properties</h3>
+                
+                <!-- Transform Section -->
+                <div class="property-group">
+                    <div class="section-header" data-section="transform">
+                        <h4>Transform</h4>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="section-content" id="transformSection">
+                        <div class="transform-grid">
+                            <div class="property-row">
+                                <span class="property-label">X</span>
+                                <div class="property-control">
+                                    <input type="number" id="positionX" step="1">
+                                </div>
+                            </div>
+                            <div class="property-row">
+                                <span class="property-label">Y</span>
+                                <div class="property-control">
+                                    <input type="number" id="positionY" step="1">
+                                </div>
+                            </div>
+                            <div class="property-row">
+                                <span class="property-label">Width</span>
+                                <div class="property-control">
+                                    <input type="number" id="objectWidth" step="1" min="1">
+                                </div>
+                            </div>
+                            <div class="property-row">
+                                <span class="property-label">Height</span>
+                                <div class="property-control">
+                                    <input type="number" id="objectHeight" step="1" min="1">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">Rotation</span>
+                            <div class="property-control">
+                                <input type="number" id="rotation" min="0" max="360" step="1">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Style Section -->
+                <div class="property-group">
+                    <div class="section-header" data-section="style">
+                        <h4>Style</h4>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="section-content" id="styleSection">
+                        <div class="style-controls">
+                            <div class="property-row">
+                                <span class="property-label">Fill</span>
+                                <div class="property-control">
+                                    <input type="color" id="fillColor" class="color-picker">
+                                </div>
+                            </div>
+                            <div class="property-row">
+                                <span class="property-label">Opacity</span>
+                                <div class="property-control">
+                                    <input type="range" id="opacity" min="0" max="1" step="0.1" value="1">
+                                    <span id="opacityValue" style="font-size: 12px; color: #666;">100%</span>
+                                </div>
+                            </div>
+                            <div class="property-row">
+                                <span class="property-label">Stroke</span>
+                                <div class="property-control">
+                                    <input type="color" id="strokeColor" class="color-picker">
+                                </div>
+                            </div>
+                            <div class="property-row">
+                                <span class="property-label">Stroke Width</span>
+                                <div class="property-control">
+                                    <input type="number" id="strokeWidth" min="0" max="50" value="1">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Shape Properties Section -->
+                <div class="property-group" id="shapeProperties" style="display: none;">
+                    <div class="section-header" data-section="shape">
+                        <h4>Shape Properties</h4>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="section-content" id="shapeSection">
+                        <div class="property-row">
+                            <span class="property-label">Border Radius</span>
+                            <div class="property-control">
+                                <input type="number" id="borderRadius" min="0" value="0">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Bottom Controls -->
+        <div class="bottom-controls">
+            <div class="history-controls">
+                <button id="undoButton" class="control-btn" disabled>
+                    <i class="fas fa-undo"></i>
+                </button>
+                <button id="redoButton" class="control-btn" disabled>
+                    <i class="fas fa-redo"></i>
+                </button>
+            </div>
+            <div class="zoom-controls">
+                <button id="zoomOut" class="control-btn">
+                    <i class="fas fa-minus"></i>
+                </button>
+                <span id="zoomValue" class="zoom-level">100%</span>
+                <button id="zoomIn" class="control-btn">
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Add context menu -->
+        <div class="context-menu" id="shapeContextMenu">
+            <div class="context-menu-item" id="groupAction">
+                <i class="fas fa-object-group"></i>
+                Group (Ctrl+G)
+            </div>
+            <div class="context-menu-item" id="ungroupAction">
+                <i class="fas fa-object-ungroup"></i>
+                Ungroup (Ctrl+Shift+G)
+            </div>
+            <div class="context-menu-separator"></div>
+            <div class="context-menu-item" id="bringForward">
+                <i class="fas fa-level-up-alt"></i>
+                Bring Forward
+            </div>
+            <div class="context-menu-item" id="sendBackward">
+                <i class="fas fa-level-down-alt"></i>
+                Send Backward
+            </div>
+        </div>
     </div>
-  </div>
+    <script>
+                // Initialize canvases
+        const canvas = new fabric.Canvas('mainCanvas', {
+            width: window.innerWidth - 48, // Account for left toolbar
+            height: 600,
+            backgroundColor: '#ffffff',
+            selection: true,
+            preserveObjectStacking: true,
+            defaultCursor: 'default',
+            hoverCursor: 'move',
+            moveCursor: 'move',
+            rotationCursor: 'crosshair',
+            cornerStyle: 'circle',
+            cornerSize: 8,
+            transparentCorners: false,
+            cornerColor: '#2196f3',
+            borderColor: '#2196f3',
+            borderScaleFactor: 2
+        });
 
-  <script>
-    // Fabric.js Canvas Setup
-    const canvas = new fabric.Canvas('canvas', {
-      backgroundColor: 'white',
-    });
+        // Global variables for state management
+        let isPanning = false;
+        let lastPosX;
+        let lastPosY;
+        let isDrawing = false;
+        let startPoint;
+        let currentShape = null;
+        let currentTool = 'select';
+        let currentShapeType = 'rect';
 
-    // History tracking for Undo/Redo
-    let history = [];
-    let currentHistoryIndex = -1;
+        // Simplified object controls
+        fabric.Object.prototype.set({
+            transparentCorners: false,
+            cornerColor: '#2196f3',
+            cornerStyle: 'circle',
+            cornerSize: 8,
+            borderColor: '#2196f3',
+            borderScaleFactor: 2,
+            padding: 5,
+            cornerStrokeColor: '#ffffff',
+            hasRotatingPoint: false,
+            lockRotation: true
+        });
 
-    function saveState() {
-      // Save the current state of the canvas for undo/redo functionality
-      if (currentHistoryIndex < history.length - 1) {
-        history = history.slice(0, currentHistoryIndex + 1);
-      }
-      history.push(JSON.stringify(canvas.toJSON()));
-      currentHistoryIndex++;
-    }
+        // Update cursor based on tool and state
+        function updateCursor() {
+            const container = document.querySelector('.canvas-container');
+            container.classList.remove('select', 'move', 'drawing', 'text', 'panning');
+            
+            switch(currentTool) {
+                case 'select':
+                    container.classList.add('select');
+                    break;
+                case 'move':
+                    container.classList.add('move');
+                    break;
+                case 'shape':
+                    container.classList.add('drawing');
+                    break;
+                case 'text':
+                    container.classList.add('text');
+                    break;
+                case 'pan':
+                    container.classList.add('panning');
+                    break;
+            }
+        }
 
-    function undo() {
-      if (currentHistoryIndex > 0) {
-        currentHistoryIndex--;
-        canvas.loadFromJSON(history[currentHistoryIndex], canvas.renderAll.bind(canvas));
-      }
-    }
+        // Pan and drawing handlers
+        canvas.on('mouse:down', (opt) => {
+            const evt = opt.e;
+            if (evt.altKey || currentTool === 'pan') {
+                isPanning = true;
+                canvas.selection = false;
+                canvas.discardActiveObject();
+                canvas.renderAll();
+                lastPosX = evt.clientX;
+                lastPosY = evt.clientY;
+                document.querySelector('.canvas-container').classList.add('panning');
+            } else if (currentTool === 'shape') {
+                isDrawing = true;
+                const pointer = canvas.getPointer(opt.e);
+                startPoint = pointer;
+                createShape(pointer);
+            }
+        });
 
-    function redo() {
-      if (currentHistoryIndex < history.length - 1) {
-        currentHistoryIndex++;
-        canvas.loadFromJSON(history[currentHistoryIndex], canvas.renderAll.bind(canvas));
-      }
-    }
+        canvas.on('mouse:move', (opt) => {
+            if (isPanning) {
+                const evt = opt.e;
+                const deltaX = evt.clientX - lastPosX;
+                const deltaY = evt.clientY - lastPosY;
+                lastPosX = evt.clientX;
+                lastPosY = evt.clientY;
 
-    // Add Text
-    function addText() {
-      const text = new fabric.Textbox('Double-click to edit', {
-        left: 100,
-        top: 100,
-        width: 200,
-        fontSize: 24,
-        fontFamily: 'Helvetica, Arial, sans-serif',
-        fill: '#000',
-        editable: true,
-        cornerSize: 12,
-        borderColor: '#ccc',
-        padding: 10,
-      });
+                const vpt = canvas.viewportTransform;
+                vpt[4] += deltaX;
+                vpt[5] += deltaY;
+                canvas.requestRenderAll();
+            } else if (isDrawing && currentShape) {
+                const pointer = canvas.getPointer(opt.e);
+                updateShapeSize(pointer);
+            }
+        });
 
-      text.on('mousedown', function () {
-        text.set({ fill: 'blue' });
-        canvas.renderAll();
-      });
+        canvas.on('mouse:up', () => {
+            isPanning = false;
+            isDrawing = false;
+            document.querySelector('.canvas-container').classList.remove('panning');
+            canvas.selection = true;
+            if (currentShape) {
+                currentShape.setCoords();
+                canvas.setActiveObject(currentShape);
+                currentShape = null;
+                history.saveState();
+            }
+        });
 
-      text.on('blur', function () {
-        text.set({ fill: '#000' });
-        canvas.renderAll();
-        saveState();
-      });
+        // History management with fixed redo
+        const history = {
+            states: [],
+            currentIndex: -1,
+            maxStates: 50,
+            
+            saveState() {
+                const json = canvas.toJSON(['selectable', 'hasControls']);
+                const serialized = JSON.stringify(json);
+                
+                // Check if state has changed
+                if (this.currentIndex >= 0 && serialized === JSON.stringify(this.states[this.currentIndex])) {
+                    return;
+                }
 
-      canvas.add(text);
-      canvas.setActiveObject(text);
-      saveState();
-    }
+                // Remove future states when new action is performed
+                this.states.splice(this.currentIndex + 1);
+                this.states.push(json);
+                
+                // Maintain max states
+                if (this.states.length > this.maxStates) {
+                    this.states.shift();
+                    this.currentIndex = this.maxStates - 1;
+                } else {
+                    this.currentIndex = this.states.length - 1;
+                }
+                
+                this.updateButtons();
+            },
 
-    // Add Rectangle
-    function addRectangle() {
-      const rect = new fabric.Rect({
-        left: 100,
-        top: 100,
-        width: 150,
-        height: 100,
-        fill: 'white',
-        draggable: true,
-      });
-      canvas.add(rect);
-      saveState();
-    }
+            undo() {
+                if (this.currentIndex > 0) {
+                    this.currentIndex--;
+                    this.loadState();
+                }
+            },
 
-    // Add Circle
-    function addCircle() {
-      const circle = new fabric.Circle({
-        left: 150,
-        top: 150,
-        radius: 50,
-        fill: 'blue',
-        draggable: true,
-      });
-      canvas.add(circle);
-      saveState();
-    }
+            redo() {
+                if (this.currentIndex < this.states.length - 1) {
+                    this.currentIndex++;
+                    this.loadState();
+                }
+            },
 
-    // Delete Selected Object
-    function deleteSelected() {
-      const selectedObject = canvas.getActiveObject();
-      if (selectedObject) {
-        canvas.remove(selectedObject);
-        saveState();
-      }
-      hideContextMenu();
-    }
+            loadState() {
+                canvas.loadFromJSON(this.states[this.currentIndex], () => {
+                    canvas.getObjects().forEach(obj => {
+                        obj.setControlsVisibility({
+                            mtr: false,
+                            ml: true,
+                            mr: true,
+                            mt: true,
+                            mb: true
+                        });
+                    });
+                    canvas.renderAll();
+                    this.updateButtons();
+                });
+            },
 
-    // Bring to Front
-    function bringToFront() {
-      const selectedObject = canvas.getActiveObject();
-      if (selectedObject) {
-        selectedObject.bringToFront();
-        saveState();
-      }
-      hideContextMenu();
-    }
+            updateButtons() {
+                const undoBtn = document.getElementById('undoButton');
+                const redoBtn = document.getElementById('redoButton');
+                
+                undoBtn.disabled = this.currentIndex <= 0;
+                redoBtn.disabled = this.currentIndex >= this.states.length - 1;
+                
+                // Update button tooltips
+                undoBtn.title = this.currentIndex > 0 ? 'Undo' : 'Nothing to undo';
+                redoBtn.title = this.currentIndex < this.states.length - 1 ? 'Redo' : 'Nothing to redo';
+            }
+        };
 
-    // Send to Back
-    function sendToBack() {
-      const selectedObject = canvas.getActiveObject();
-      if (selectedObject) {
-        selectedObject.sendToBack();
-        saveState();
-      }
-      hideContextMenu();
-    }
+        // Zoom management
+        const zoom = {
+            current: 1,
+            min: 0.1,  // 10%
+            max: 2,    // 200%
+            step: 0.1,
 
-    // Right-click context menu functionality
-    const contextMenu = document.getElementById('contextMenu');
+            init() {
+                this.updateZoomLevel();
+            },
 
-    canvas.on('mouse:down', function (options) {
-      if (options.target) {
-        canvas.setActiveObject(options.target);
-      } else {
-        canvas.discardActiveObject();
-      }
-    });
+            setZoom(zoomLevel, point) {
+                // Clamp zoom level between min and max
+                this.current = Math.min(Math.max(zoomLevel, this.min), this.max);
+                
+                if (point) {
+                    canvas.zoomToPoint(point, this.current);
+                } else {
+                    canvas.setZoom(this.current);
+                }
+                
+                this.updateZoomLevel();
+                canvas.requestRenderAll();
+            },
 
-    canvas.on('mouse:up', function (options) {
-      if (options.target) {
-        contextMenu.style.left = options.e.clientX + 'px';
-        contextMenu.style.top = options.e.clientY + 'px';
-        contextMenu.style.display = 'block';
-      } else {
-        contextMenu.style.display = 'none';
-      }
-    });
+            updateZoomLevel() {
+                const percentage = Math.round(this.current * 100);
+                document.getElementById('zoomValue').textContent = `${percentage}%`;
+                
+                // Update zoom buttons state
+                document.getElementById('zoomIn').disabled = this.current >= this.max;
+                document.getElementById('zoomOut').disabled = this.current <= this.min;
+            }
+        };
 
-    // Hide Context Menu
-    document.addEventListener('click', function () {
-      contextMenu.style.display = 'none';
-    });
+        // Mouse wheel zoom
+        canvas.on('mouse:wheel', (opt) => {
+            const delta = opt.e.deltaY;
+            let newZoom = zoom.current * (0.999 ** delta);
+            
+            // Clamp zoom level
+            newZoom = Math.min(Math.max(newZoom, zoom.min), zoom.max);
+            
+            const point = new fabric.Point(opt.e.offsetX, opt.e.offsetY);
+            zoom.setZoom(newZoom, point);
+            
+            opt.e.preventDefault();
+            opt.e.stopPropagation();
+        });
 
-    // Save initial state
-    saveState();
-  </script>
+        // Responsive canvas resize
+        function resizeCanvas() {
+            const width = window.innerWidth - 48; // Account for left toolbar
+            canvas.setWidth(width);
+            canvas.setHeight(600);
+            canvas.renderAll();
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', resizeCanvas);
+
+        // Initialize zoom
+        zoom.init();
+
+        // Canvas event handlers
+        canvas.on('object:modified', () => {
+            history.saveState();
+        });
+
+        canvas.on('object:added', () => {
+            history.saveState();
+        });
+
+        canvas.on('object:removed', () => {
+            history.saveState();
+        });
+
+        // Selection handlers for properties panel
+        canvas.on('selection:created', (e) => {
+            document.getElementById('propertiesEditor').classList.add('active');
+            updatePropertyPanel(e.selected[0]);
+        });
+
+        canvas.on('selection:updated', (e) => {
+            updatePropertyPanel(e.selected[0]);
+        });
+
+        canvas.on('selection:cleared', () => {
+            document.getElementById('propertiesEditor').classList.remove('active');
+            updatePropertyPanel(null);
+        });
+
+        // Initialize undo/redo buttons
+        document.getElementById('undoButton').addEventListener('click', () => history.undo());
+        document.getElementById('redoButton').addEventListener('click', () => history.redo());
+
+        // Save initial state
+        history.saveState();
+
+        // Create shape at point
+        function createShape(pointer) {
+            const shapeType = currentShapeType || 'rect';
+            switch(shapeType) {
+                case 'rect':
+                    currentShape = new fabric.Rect({
+                        left: pointer.x,
+                        top: pointer.y,
+                        width: 0,
+                        height: 0,
+                        fill: '#ffffff',
+                        stroke: '#000000',
+                        strokeWidth: 2
+                    });
+                    break;
+                case 'circle':
+                    currentShape = new fabric.Circle({
+                        left: pointer.x,
+                        top: pointer.y,
+                        radius: 0,
+                        fill: '#ffffff',
+                        stroke: '#000000',
+                        strokeWidth: 2
+                    });
+                    break;
+                case 'triangle':
+                    currentShape = new fabric.Triangle({
+                        left: pointer.x,
+                        top: pointer.y,
+                        width: 0,
+                        height: 0,
+                        fill: '#ffffff',
+                        stroke: '#000000',
+                        strokeWidth: 2
+                    });
+                    break;
+            }
+            if (currentShape) {
+                canvas.add(currentShape);
+            }
+        }
+
+        // Update shape size while dragging
+        function updateShapeSize(pointer) {
+            if (!currentShape) return;
+
+            const width = Math.abs(pointer.x - startPoint.x);
+            const height = Math.abs(pointer.y - startPoint.y);
+
+            if (currentShape.type === 'circle') {
+                const radius = Math.sqrt(width * width + height * height) / 2;
+                currentShape.set({
+                    radius: radius,
+                    left: startPoint.x - radius,
+                    top: startPoint.y - radius
+                });
+            } else {
+                currentShape.set({
+                    width: width,
+                    height: height,
+                    left: Math.min(startPoint.x, pointer.x),
+                    top: Math.min(startPoint.y, pointer.y)
+                });
+            }
+            canvas.renderAll();
+        }
+
+        // Property panel update
+        function updatePropertyPanel(obj) {
+            const propertiesPanel = document.getElementById('propertiesEditor');
+            
+            if (!obj) {
+                propertiesPanel.classList.remove('active');
+                return;
+            }
+
+            propertiesPanel.classList.add('active');
+            
+            // Get all property inputs
+            const fillColor = document.getElementById('fillColor');
+            const strokeColor = document.getElementById('strokeColor');
+            const strokeWidth = document.getElementById('strokeWidth');
+            const opacity = document.getElementById('opacity');
+            const fontSize = document.getElementById('fontSize');
+
+            // Update input values based on object type
+            if (obj.type === 'i-text') {
+                fillColor.value = obj.fill || '#000000';
+                fontSize.value = obj.fontSize || 20;
+                fontSize.parentElement.style.display = 'flex';
+            } else {
+                fillColor.value = obj.fill || '#ffffff';
+                fontSize.parentElement.style.display = 'none';
+            }
+
+            strokeColor.value = obj.stroke || '#000000';
+            strokeWidth.value = obj.strokeWidth || 1;
+            opacity.value = obj.opacity || 1;
+
+            // Add event listeners for property changes
+            fillColor.onchange = () => {
+                obj.set('fill', fillColor.value);
+                canvas.renderAll();
+                history.saveState();
+            };
+
+            strokeColor.onchange = () => {
+                obj.set('stroke', strokeColor.value);
+                canvas.renderAll();
+                history.saveState();
+            };
+
+            strokeWidth.onchange = () => {
+                obj.set('strokeWidth', parseInt(strokeWidth.value));
+                canvas.renderAll();
+                history.saveState();
+            };
+
+            opacity.onchange = () => {
+                obj.set('opacity', parseFloat(opacity.value));
+                canvas.renderAll();
+                history.saveState();
+            };
+
+            if (obj.type === 'i-text') {
+                fontSize.onchange = () => {
+                    obj.set('fontSize', parseInt(fontSize.value));
+                    canvas.renderAll();
+                    history.saveState();
+                };
+            }
+        }
+
+        // Current tool and state
+        // Tool buttons event listeners
+        document.querySelectorAll('.tool-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const tool = btn.dataset.tool;
+                const action = btn.dataset.action;
+                const shape = btn.dataset.shape;
+
+                if (tool) {
+                    currentTool = tool;
+                    document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    setActiveTool(tool);
+                } else if (action) {
+                    handleAction(action);
+                } else if (shape) {
+                    currentShapeType = shape;
+                    document.getElementById('shapeMenu').style.display = 'none';
+                }
+            });
+        });
+
+        // Tool handlers
+        function setActiveTool(tool) {
+            currentTool = tool;
+            canvas.isDrawingMode = tool === 'draw';
+            canvas.selection = tool === 'select';
+            updateCursor();
+
+            switch(tool) {
+                case 'text':
+                    addText();
+                    break;
+                case 'shape':
+                    showShapeMenu();
+                    break;
+                case 'draw':
+                    canvas.freeDrawingBrush.width = 2;
+                    canvas.freeDrawingBrush.color = '#000000';
+                    break;
+                case 'image':
+                    addImage();
+                    break;
+                case 'pan':
+                    canvas.selection = false;
+                    canvas.discardActiveObject();
+                    canvas.renderAll();
+                    break;
+            }
+        }
+
+        // Add text
+        function addText() {
+            const text = new fabric.IText('Double click to edit', {
+                left: canvas.width / 2,
+                top: canvas.height / 2,
+                fontSize: 20,
+                fill: '#000000'
+            });
+            canvas.add(text);
+            canvas.setActiveObject(text);
+        }
+
+        // Add shapes
+        function addShape(type) {
+            let shape;
+            switch(type) {
+                case 'rect':
+                    shape = new fabric.Rect({
+                        left: canvas.width / 2,
+                        top: canvas.height / 2,
+                        width: 100,
+                        height: 100,
+                        fill: '#ffffff',
+                        stroke: '#000000',
+                        strokeWidth: 2
+                    });
+                    break;
+                case 'circle':
+                    shape = new fabric.Circle({
+                        left: canvas.width / 2,
+                        top: canvas.height / 2,
+                        radius: 50,
+                        fill: '#ffffff',
+                        stroke: '#000000',
+                        strokeWidth: 2
+                    });
+                    break;
+                case 'triangle':
+                    shape = new fabric.Triangle({
+                        left: canvas.width / 2,
+                        top: canvas.height / 2,
+                        width: 100,
+                        height: 100,
+                        fill: '#ffffff',
+                        stroke: '#000000',
+                        strokeWidth: 2
+                    });
+                    break;
+            }
+            if (shape) {
+                canvas.add(shape);
+                canvas.setActiveObject(shape);
+                canvas.requestRenderAll();
+            }
+        }
+
+        // Add image
+        function addImage() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    fabric.Image.fromURL(event.target.result, (img) => {
+                        img.scaleToWidth(200);
+                        canvas.add(img);
+                        canvas.setActiveObject(img);
+                    });
+                };
+                reader.readAsDataURL(file);
+            };
+            input.click();
+        }
+
+        // Show shape menu
+        function showShapeMenu() {
+            const shapeMenu = document.getElementById('shapeMenu');
+            const shapeButton = document.querySelector('[data-tool="shape"]');
+            const rect = shapeButton.getBoundingClientRect();
+            
+            shapeMenu.style.display = 'flex';
+            shapeMenu.style.top = (rect.bottom + 8) + 'px';
+            shapeMenu.style.left = rect.left + 'px';
+            
+            // Add click handlers for shape buttons if not already added
+            if (!shapeMenu.hasAttribute('data-initialized')) {
+                shapeMenu.querySelectorAll('[data-shape]').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        addShape(btn.dataset.shape);
+                        shapeMenu.style.display = 'none';
+                    });
+                });
+                shapeMenu.setAttribute('data-initialized', 'true');
+            }
+            
+            // Close menu when clicking outside
+            const closeMenu = (e) => {
+                if (!shapeMenu.contains(e.target) && !shapeButton.contains(e.target)) {
+                    shapeMenu.style.display = 'none';
+                    document.removeEventListener('click', closeMenu);
+                }
+            };
+            setTimeout(() => document.addEventListener('click', closeMenu), 0);
+        }
+
+        // Handle actions
+        function handleAction(action) {
+            const activeObject = canvas.getActiveObject();
+            if (!activeObject) return;
+
+            switch(action) {
+                case 'fit':
+                    fitObjectToCanvas(activeObject);
+                    break;
+                case 'mask':
+                    createMask(activeObject);
+                    break;
+                case 'bring-to-front':
+                    activeObject.bringToFront();
+                    break;
+                case 'send-to-back':
+                    activeObject.sendToBack();
+                    break;
+                case 'group':
+                    if (activeObject && activeObject.type === 'activeSelection') {
+                        canvas.getActiveObject().toGroup();
+                    }
+                    break;
+                case 'ungroup':
+                    if (activeObject && activeObject.type === 'group') {
+                        const items = activeObject.getObjects();
+                        activeObject.destroy();
+                        canvas.remove(activeObject);
+                        canvas.add(...items);
+                    }
+                    break;
+            }
+            canvas.renderAll();
+            history.saveState();
+        }
+
+        // Fit object to canvas
+        function fitObjectToCanvas(obj) {
+            const canvasWidth = canvas.width;
+            const canvasHeight = canvas.height;
+            const padding = 20;
+
+            const scale = Math.min(
+                (canvasWidth - padding * 2) / obj.width,
+                (canvasHeight - padding * 2) / obj.height
+            );
+
+            obj.scale(scale);
+            obj.center();
+            canvas.renderAll();
+        }
+
+        // Create mask from object
+        function createMask(obj) {
+            if (!obj) return;
+
+            const mask = new fabric.Rect({
+                left: obj.left,
+                top: obj.top,
+                width: obj.width * obj.scaleX,
+                height: obj.height * obj.scaleY,
+                fill: '#ffffff',
+                selectable: true
+            });
+
+            obj.clipPath = mask;
+            canvas.renderAll();
+        }
+        
+        // Initialize default tool
+        setActiveTool('select');
+    </script>
 </body>
 </html>
