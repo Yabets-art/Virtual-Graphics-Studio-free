@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Graphics Studio</title>
+    <!-- External Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Top Navigation -->
+        <nav class="top-nav">
+            <div class="top-nav-section" style="margin-left: auto;">
+                <button class="pro-button">
+                    <i class="fas fa-crown"></i> Publish
+                </button>
+                <div class="dropdown-container">
+                    <div class="dropdown-item  has-submenu">
+                        <span>
+                            <i class="fas fa-download"></i> Export
+                            <i class="fas fa-chevron-right"></i>
+                        </span>
+                        <div class="submenu">
+                            <div class="top-nav-section">
+                                <label class="switch">
+                                    <input type="checkbox" id="backgroundToggle">
+                                    <span class="slider round"></span>
+                                </label>
+                                <span>Preserve Background</span>
+                            </div>
+
+                            <button data-export="png">
+                                <i class="fas fa-image"></i> PNG Image
+                            </button>
+                            <button data-export="jpeg">
+                                <i class="fas fa-file-image"></i> JPEG Image
+                            </button>
+                            <button data-export="svg">
+                                <i class="fas fa-code"></i> SVG Vector
+                            </button>
+                            <button data-export="code">
+                                <i class="fas fa-code"></i> Code
+                            </button>
+                            <button data-share="copy">
+                                <i class="fas fa-copy"></i> Copy Link
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Canvas Container -->
+            <div class="canvas-container">
+                <canvas id="mainCanvas" width="800" height="600"></canvas>
+            </div>
+            
+            <!-- Tools Panel -->
+            <div class="tools-panel">
+                <!-- Creation Tools Section -->
+                <div class="tools-section">
+                    <div class="tools-group">
+                        <button class="tool-btn" data-tool="select" title="Select (Ctrl+a)">
+                            <i class="fas fa-mouse-pointer"></i>
+                        </button>
+                        <button class="tool-btn" id="templateToggle" title="Design Templates">
+                            <i class="fas fa-paint-brush"></i>
+                        </button>
+                        <button class="tool-btn" data-tool="text" title="Add Text (Ctrl+T)">
+                            <i class="fas fa-text-height"></i>
+                        </button>
+                        <button class="tool-btn" data-tool="shape" title="Add Shape (Ctrl+S)">
+                            <i class="fas fa-shapes"></i>
+                        </button>
+                        <button class="tool-btn" data-tool="draw" title="Draw (Ctrl+B)">
+                            <i class="fas fa-pencil-alt"></i>
+                        </button>
+                        <button class="tool-btn" data-tool="image" title="Add Image (Ctrl+I)">
+                            <i class="fas fa-image"></i>
+                        </button>
+                        <!-- <button class="tool-btn" data-tool="crop" title="Crop Image (Ctrl+Shift+C)">
+                            <i class="fas fa-crop-alt"></i>
+                        </button> -->
+                        <button class="tool-btn" data-tool="icon" title="Add Icon (Ctrl+Shift+I)">
+                            <i class="fas fa-icons"></i>
+                        </button>
+               
+                    </div>
+                </div>
+                <!-- Arrangement Tools Section -->
+                <div class="tools-section">
+                    <div class="tools-group">
+                        <button class="tool-btn" data-action="bring-front" title="Bring to Front (Ctrl+])" onclick="editor.bringToFront()">
+                            <i class="fas fa-level-up-alt"></i>
+                        </button>
+                        <button class="tool-btn" data-action="send-back" title="Send to Back (Ctrl+[)" onclick="editor.sendToBack()">
+                            <i class="fas fa-level-down-alt"></i>
+                        </button>
+                        <button class="tool-btn" data-action="group" title="Group (Ctrl+G)" onclick="editor.groupObjects()">
+                            <i class="fas fa-object-group"></i>
+                        </button>
+                        <button class="tool-btn" data-action="ungroup" title="Ungroup (Ctrl+Shift+G)" onclick="editor.ungroupObjects()">
+                            <i class="fas fa-object-ungroup"></i>
+                        </button>
+                    </div>
+                </div>
+                <!-- View Tools Section -->
+                <div class="tools-section">
+                    <div class="tools-group">
+                        <button class="tool-btn" data-tool="pan" title="Pan Tool (Ctrl+Space)">
+                            <i class="fas fa-hand-paper"></i>
+                        </button>
+                        <button class="tool-btn" data-action="fit" title="Fit to Screen (Ctrl+0)">
+                            <i class="fas fa-expand-arrows-alt"></i>
+                        </button>
+                    </div>
+                </div>
+                <!-- Advanced Tools Section -->
+                <!-- <div class="tools-section">
+                    <div class="tools-group">
+                        <button class="tool-btn" data-action="mask" title="Create Mask (M)">
+                            <i class="fas fa-crop-alt"></i>
+                        </button>
+                        <div class="mask-type-controls">
+                            <button class="tool-btn mask-type-button" data-mask-type="rectangle" title="Rectangle Mask">
+                                <i class="fas fa-square"></i>
+                            </button>
+                            <button class="tool-btn mask-type-button" data-mask-type="circle" title="Circle Mask">
+                                <i class="fas fa-circle"></i>
+                            </button>
+                            <button class="tool-btn mask-type-button" data-mask-type="custom" title="Custom Mask">
+                                <i class="fas fa-draw-polygon"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div> -->
+
+            <!-- Shape Menu -->
+            <div class="shape-menu" id="shapeMenu">
+                <button class="tool-btn" data-shape="rect" title="Rectangle"><i class="fas fa-square"></i></button>
+                <button class="tool-btn" data-shape="circle" title="Circle"><i class="fas fa-circle"></i></button>
+                <button class="tool-btn" data-shape="triangle" title="Triangle"><i class="fas fa-play"></i></button>
+                <button class="tool-btn" data-shape="star" title="Star"><i class="fas fa-star"></i></button>
+                <button class="tool-btn" data-shape="polygon" title="Polygon"><i class="fas fa-draw-polygon"></i></button>
+            </div>
+
+            <!-- Icon Menu -->
+            <div class="icon-menu" id="iconMenu">
+                <div class="icon-menu-header">
+                    <input type="text" id="iconSearch" placeholder="Search icons...">
+                    <select id="iconCategory">
+                        <!-- Will be populated dynamically -->
+                    </select>
+                </div>
+                <div class="icon-grid" id="iconGrid">
+                    <!-- Will be populated dynamically -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Properties Editor Panel -->
+        <div class="properties-editor" id="propertiesEditor">
+            <div class="properties-header">
+                <h3>Properties</h3>
+                <button class="tool-btn" id="closeProperties">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="properties-content">
+                <!-- Position & Size -->
+                <div class="property-group" data-group="geometry">
+                    <div class="property-group-header">
+                        <h4><i class="fas fa-arrows-alt"></i> Position & Size</h4>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="property-group-content">
+                        <div class="property-row" data-property="position">
+                            <span class="property-label">Position</span>
+                            <div class="property-control">
+                                <input type="number" id="posX" placeholder="X">
+                                <input type="number" id="posY" placeholder="Y">
+                            </div>
+                        </div>
+                        <div class="property-row" data-property="size">
+                            <span class="property-label">Size</span>
+                            <div class="property-control">
+                                <input type="number" id="objWidth" placeholder="W">
+                                <input type="number" id="objHeight" placeholder="H">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Transform -->
+                <div class="property-group" data-group="transform">
+                    <div class="property-group-header">
+                        <h4><i class="fas fa-sync"></i> Transform</h4>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+
+                    <div class="property-row">
+                        <span class="property-label">Skew X</span>
+                        <div class="property-control">
+                            <input type="range" id="skewX" min="-180" max="180" value="0">
+                            <span class="property-value">0°</span>
+                        </div>
+                    </div>
+                    <div class="property-row">
+                        <span class="property-label">Skew Y</span>
+                        <div class="property-control">
+                            <input type="range" id="skewY" min="-180" max="180" value="0">
+                            <span class="property-value">0°</span>
+                        </div>
+                    </div>
+                    <div class="property-group-content">
+                        <div class="property-row" data-property="rotation">
+                            <span class="property-label">Rotation</span>
+                            <div class="property-control">
+                                <input type="range" id="rotation" min="0" max="360" value="0">
+                                <span class="property-value">0°</span>
+                            </div>
+                        </div>
+                        <div class="property-row" data-property="flip">
+                            <span class="property-label">Flip</span>
+                            <div class="property-control buttons">
+                                <button id="flipX" class="mini-btn" title="Flip Horizontal">
+                                    <i class="fas fa-arrows-alt-h"></i>
+                                </button>
+                                <button id="flipY" class="mini-btn" title="Flip Vertical">
+                                    <i class="fas fa-arrows-alt-v"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Style -->
+                <div class="property-group" data-group="style">
+                    <div class="property-group-header">
+                        <h4><i class="fas fa-paint-brush"></i> Style</h4>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="property-group-content">
+                        <div class="property-row" data-property="fill">
+                            <span class="property-label">Fill Color</span>
+                            <div class="property-control">
+                                <input type="color" id="fillColor" value="#ffffff">
+                            </div>
+                        </div>
+                        <div class="property-row" data-property="stroke">
+                            <span class="property-label">Border Color</span>
+                            <div class="property-control">
+                                <input type="color" id="strokeColor" value="#000000">
+                            </div>
+                        </div>
+                        <div class="property-row" data-property="strokeWidth">
+                            <span class="property-label">Border Width</span>
+                            <div class="property-control">
+                                <input type="number" id="strokeWidth" min="0" max="20" value="1">
+                                <span class="unit">px</span>
+                            </div>
+                        </div>
+                        <div class="property-row" data-property="opacity">
+                            <span class="property-label">Opacity</span>
+                            <div class="property-control">
+                                <input type="range" id="opacity" min="0" max="1" step="0.1" value="1">
+                                <span class="property-value">100%</span>
+                            </div>
+                        </div>
+                        
+                    </div>
+
+        
+                </div>
+
+                <!-- Border Radius (simplified) -->
+                <div class="property-group" data-group="borderRadius">
+                    <div class="property-group-header">
+                        <h4><i class="fas fa-border-style"></i> Border Radius</h4>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="property-group-content">
+                        <div class="property-row" data-property="borderRadius">
+                            <span class="property-label">Border Radius</span>
+                            <div class="property-control">
+                                <input type="number" id="borderRadius" min="0" value="0">
+                                <span class="unit">px</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Text Properties -->
+                <div class="property-group" data-group="text">
+                    <div class="property-group-header">
+                        <h4><i class="fas fa-font"></i> Text</h4>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="property-group-content">
+                        <div class="property-row">
+                            <span class="property-label">Font</span>
+                            <div class="property-control">
+                                <select id="fontFamily" class="select-input">
+                                    <optgroup label="Popular Fonts">
+                                        <option value="Arial">Arial</option>
+                                        <option value="Helvetica">Helvetica</option>
+                                        <option value="Verdana">Verdana</option>
+                                        <option value="Times New Roman">Times New Roman</option>
+                                        <option value="Courier New">Courier New</option>
+                                        <option value="Georgia">Georgia</option>
+                                        <option value="Garamond">Garamond</option>
+                                        <option value="Tahoma">Tahoma</option>
+                                        <option value="Impact">Impact</option>
+                                        <option value="Comic Sans MS">Comic Sans MS</option>
+                                        <option value="Trebuchet MS">Trebuchet MS</option>
+                                    </optgroup>
+                                    <optgroup label="Google Fonts">
+                                        <option value="Roboto">Roboto</option>
+                                        <option value="Open Sans">Open Sans</option>
+                                        <option value="Lato">Lato</option>
+                                        <option value="Montserrat">Montserrat</option>
+                                        <option value="Raleway">Raleway</option>
+                                        <option value="Oswald">Oswald</option>
+                                        <option value="Poppins">Poppins</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">Style</span>
+                            <div class="property-control buttons">
+                                <button class="mini-btn" id="fontBold" title="Bold">
+                                    <i class="fas fa-bold"></i>
+                                </button>
+                                <button class="mini-btn" id="fontItalic" title="Italic">
+                                    <i class="fas fa-italic"></i>
+                                </button>
+                                <button class="mini-btn" id="fontUnderline" title="Underline">
+                                    <i class="fas fa-underline"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="property-row" data-property="textTransform">
+                            <span class="property-label">Case</span>
+                            <div class="property-control">
+                                <select id="textTransform" class="select-input">
+                                    <option value="normal">Normal</option>
+                                    <option value="uppercase">UPPERCASE</option>
+                                    <option value="lowercase">lowercase</option>
+                                    <option value="capitalize">Capitalize</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="property-row" data-property="textAlign">
+                            <span class="property-label">Align</span>
+                            <div class="property-control buttons">
+                                <button class="mini-btn" id="alignLeft" title="Align Left">
+                                    <i class="fas fa-align-left"></i>
+                                </button>
+                                <button class="mini-btn" id="alignCenter" title="Align Center">
+                                    <i class="fas fa-align-center"></i>
+                                </button>
+                                <button class="mini-btn" id="alignRight" title="Align Right">
+                                    <i class="fas fa-align-right"></i>
+                                </button>
+                                <button class="mini-btn" id="alignJustify" title="Justify">
+                                    <i class="fas fa-align-justify"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="property-row">
+                            <span class="property-label">Letter Spacing</span>
+                            <div class="property-control">
+                                <input type="number" id="charSpacing" min="-100" max="100" value="0" class="number-input">
+                                <span class="unit">px</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+        
+        <!-- Bottom Controls -->
+        <div class="bottom-controls">
+            <div class="history-controls">
+                <button id="undoButton" class="control-btn" disabled>
+                    <i class="fas fa-undo"></i>
+                </button>
+                <button id="redoButton" class="control-btn" disabled>
+                    <i class="fas fa-redo"></i>
+                </button>
+            </div>
+            <div class="zoom-controls">
+                <button id="zoomOut" class="control-btn">
+                    <i class="fas fa-minus"></i>
+                </button>
+                <span id="zoomValue" class="zoom-level">100%</span>
+                <button id="zoomIn" class="control-btn">
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>
+        </div>
+
+        
+        
+        <!-- Context Menu -->
+        <div class="context-menu" id="contextMenu">
+            <div class="context-menu-item" data-action="copy">
+                <i class="fas fa-copy"></i> Copy (Ctrl+C)
+            </div>
+            <div class="context-menu-item" data-action="cut">
+                <i class="fas fa-cut"></i> Cut (Ctrl+X)
+            </div>
+            <div class="context-menu-item" data-action="paste">
+                <i class="fas fa-paste"></i> Paste (Ctrl+V)
+            </div>
+            <div class="context-menu-separator"></div>
+            <div class="context-menu-item" data-action="bring-front">
+                <i class="fas fa-level-up-alt"></i> Bring to Front (Ctrl+])
+            </div>
+            <div class="context-menu-item" data-action="send-back">
+                <i class="fas fa-level-down-alt"></i> Send to Back (Ctrl+[)
+            </div>
+            <div class="context-menu-separator"></div>
+            <div class="context-menu-item" data-action="group">
+                <i class="fas fa-object-group"></i> Group (Ctrl+G)
+            </div>
+            <div class="context-menu-item" data-action="ungroup">
+                <i class="fas fa-object-ungroup"></i> Ungroup (Ctrl+Shift+G)
+            </div>
+
+            <div class="context-menu-separator"></div>
+
+            <div class="context-menu-item" data-action="crop">
+                <i class="fas fa-crop-alt"></i> crop (Ctrl+0)
+            </div>
+            <div class="context-menu-item" data-action="fit">
+                <i class="fas fa-expand-arrows-alt"></i> Fit to Screen (Ctrl+0)
+            </div>
+
+            
+
+
+            <div class="context-menu-separator"></div>
+            <div class="context-menu-item" data-action="delete">
+                <i class="fas fa-trash"></i> Delete (Del)
+            </div>
+            <!-- <div class="context-menu-item" data-action="createMask">
+                <i class="fas fa-crop-alt"></i> Create Mask (Ctrl+M)
+            </div>
+            <div class="context-menu-item" data-action="stopMask">
+                <i class="fas fa-stop"></i> Stop Masking (Esc)
+                </div>
+            <div class="context-menu-item" data-action="removeMask">
+                <i class="fas fa-crop"></i> Remove Mask
+            </div> -->
+        </div>
+    </div>
+    
+    <!-- Scripts -->
+     <script src="./LogoTemplet.js"></script>
+    <script  src="./scripts.js"></script>
+</body>
+</html>
