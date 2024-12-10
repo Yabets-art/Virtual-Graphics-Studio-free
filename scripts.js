@@ -1,4 +1,3 @@
-
 class HintManager {
     constructor() {
         this.hints = window.hints || [];
@@ -72,73 +71,25 @@ class HintManager {
     positionHintBox(elementRect, position = 'right') {
         const hintBox = this.hintBox;
         const margin = 20;
-        const windowWidth = window.innerWidth;
-        const windowHeight = window.innerHeight;
-        
-        // Calculate initial position
-        let left, top;
         
         switch(position) {
             case 'right':
-                left = elementRect.right + margin;
-                top = elementRect.top;
-                // Check if hint box would go off screen
-                if (left + hintBox.offsetWidth > windowWidth) {
-                    position = 'left';
-                }
+                hintBox.style.left = `${elementRect.right + margin}px`;
+                hintBox.style.top = `${elementRect.top}px`;
                 break;
             case 'left':
-                left = elementRect.left - hintBox.offsetWidth - margin;
-                top = elementRect.top;
-                // Check if hint box would go off screen
-                if (left < 0) {
-                    position = 'right';
-                }
+                hintBox.style.left = `${elementRect.left - hintBox.offsetWidth - margin}px`;
+                hintBox.style.top = `${elementRect.top}px`;
                 break;
             case 'top':
-                left = elementRect.left;
-                top = elementRect.top - hintBox.offsetHeight - margin;
-                // Check if hint box would go off screen
-                if (top < 0) {
-                    position = 'bottom';
-                }
+                hintBox.style.left = `${elementRect.left}px`;
+                hintBox.style.top = `${elementRect.top - hintBox.offsetHeight - margin}px`;
                 break;
             case 'bottom':
-                left = elementRect.left;
-                top = elementRect.bottom + margin;
-                // Check if hint box would go off screen
-                if (top + hintBox.offsetHeight > windowHeight) {
-                    position = 'top';
-                }
+                hintBox.style.left = `${elementRect.left}px`;
+                hintBox.style.top = `${elementRect.bottom + margin}px`;
                 break;
         }
-
-        // Reposition if needed based on new position
-        switch(position) {
-            case 'right':
-                left = elementRect.right + margin;
-                break;
-            case 'left':
-                left = elementRect.left - hintBox.offsetWidth - margin;
-                break;
-            case 'top':
-                top = elementRect.top - hintBox.offsetHeight - margin;
-                break;
-            case 'bottom':
-                top = elementRect.bottom + margin;
-                break;
-        }
-
-        // Ensure hint box stays within viewport
-        left = Math.max(margin, Math.min(left, windowWidth - hintBox.offsetWidth - margin));
-        top = Math.max(margin, Math.min(top, windowHeight - hintBox.offsetHeight - margin));
-
-        // Apply position
-        hintBox.style.left = `${left}px`;
-        hintBox.style.top = `${top}px`;
-
-        // Add position class for arrow
-        hintBox.className = `hint-box hint-${position}`;
     }
 
     highlightElement(element) {
@@ -172,4 +123,4 @@ class HintManager {
         this.hasSeenHints = false;
         this.init();
     }
-}
+} 

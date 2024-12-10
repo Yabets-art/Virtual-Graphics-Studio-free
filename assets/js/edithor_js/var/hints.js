@@ -1,5 +1,5 @@
 window.hints = [
-    // Left Toolbar Hints
+    // Left Toolbar Hints wirth messages 
     {
         element: '[data-tool="select"]',
         title: 'Selection Tool',
