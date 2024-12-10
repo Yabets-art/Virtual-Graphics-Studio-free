@@ -2526,3 +2526,105 @@ input:checked + .slider:before {
         flex: none;
     }
 }
+
+/* Hint Styles */
+.hint-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9998;
+    pointer-events: none;
+}
+
+.hint-overlay::before {
+    content: '';
+    position: absolute;
+    top: var(--highlight-top);
+    left: var(--highlight-left);
+    width: var(--highlight-width);
+    height: var(--highlight-height);
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid #2196f3;
+    border-radius: 4px;
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+}
+
+.hint-box {
+    position: fixed;
+    z-index: 9999;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    width: 300px;
+    pointer-events: all;
+}
+
+.hint-content h3 {
+    margin: 0 0 10px 0;
+    color: #333;
+}
+
+.hint-content p {
+    margin: 0 0 20px 0;
+    color: #666;
+}
+
+.hint-navigation {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.hint-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    background: #2196f3;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.hint-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.hint-btn:hover:not(:disabled) {
+    background: #1976d2;
+}
+
+.hint-progress {
+    color: #666;
+    font-size: 14px;
+}
+
+.hint-skip {
+    position: absolute;
+    top: -20px;
+    right: 0;
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 14px;
+    opacity: 0.8;
+}
+
+.hint-skip:hover {
+    opacity: 1;
+}
+
+.hint-finish {
+    background: #4CAF50;
+}
+
+.hint-finish:hover {
+    background: #388E3C;
+}
