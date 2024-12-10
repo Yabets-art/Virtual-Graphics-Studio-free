@@ -1,0 +1,71 @@
+window.templates = [
+    {
+        name: "Basic Layout",
+        category: "layouts",
+        type: "fabric",
+        data: {
+            version: "5.3.0",
+            objects: [
+                {
+                    type: "i-text",
+                    version: "5.3.0",
+                    originX: "center",
+                    originY: "center",
+                    left: 655,
+                    top: 300,
+                    width: 167.86,
+                    height: 22.6,
+                    fill: "#000000",
+                    stroke: null,
+                    strokeWidth: 1,
+                    strokeDashArray: null,
+                    strokeLineCap: "butt",
+                    strokeDashOffset: 0,
+                    strokeLineJoin: "miter",
+                    strokeUniform: false,
+                    strokeMiterLimit: 4,
+                    scaleX: 1,
+                    scaleY: 1,
+                    angle: 0,
+                    flipX: false,
+                    flipY: false,
+                    opacity: 1,
+                    shadow: null,
+                    visible: true,
+                    backgroundColor: "",
+                    fillRule: "nonzero",
+                    paintFirst: "fill",
+                    globalCompositeOperation: "source-over",
+                    skewX: 0,
+                    skewY: 0,
+                    fontFamily: "Arial",
+                    fontWeight: "normal",
+                    fontSize: 20,
+                    text: "Double click to edit",
+                    underline: false,
+                    overline: false,
+                    linethrough: false,
+                    textAlign: "left",
+                    fontStyle: "normal",
+                    lineHeight: 1.16,
+                    textBackgroundColor: "",
+                    charSpacing: 0,
+                    styles: [],
+                    direction: "ltr",
+                    path: null,
+                    pathStartOffset: 0,
+                    pathSide: "left",
+                    pathAlign: "baseline"
+                }
+            ]
+        },
+    },
+    {
+        name: "Circle Icon",
+        category: "icons",
+        type: "svg",
+        data: `<svg viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="40" fill="blue"/>
+        </svg>`,
+    }
+];
