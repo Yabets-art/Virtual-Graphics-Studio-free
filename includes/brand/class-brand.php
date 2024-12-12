@@ -31,12 +31,21 @@ function vgd_generate_logo_template_cards($template_folder, $number_of_cards = n
             $template_name = basename($template_file, '.php'); // Extract file name without extension
 
             echo '<div class="vgd-card">';
-            echo '<a href="?page=vgd-logo-template&template=' . urlencode($template_name) . '" class="vgd-template-card">';
             echo '<div class="vgd-card-content">';
             echo '<h4>' . esc_html(ucwords(str_replace('-', ' ', $template_name))) . '</h4>';
-            echo '<p>' . __('Click to use this template.', 'vgd') . '</p>';
-            echo '</div>';
+            echo '<p>' . __('Click to use or edit this template.', 'vgd') . '</p>';
+            
+            // "Use" button
+            echo '<a href="?page=vgd-logo-template&template=' . urlencode($template_name) . '" class="vgd-button vgd-use-button">';
+            echo __('Use', 'vgd');
             echo '</a>';
+
+            // "Edit" button
+            echo '<a href="?page=brand-editor&template=' . urlencode($template_name) . '" class="vgd-button vgd-edit-button">';
+            echo __('Edit', 'vgd');
+            echo '</a>';
+
+            echo '</div>';
             echo '</div>';
         }
     } else {
@@ -78,12 +87,21 @@ function vgd_generate_business_card_template_cards($template_folder, $number_of_
             $template_name = basename($template_file, '.php'); // Extract file name without extension
 
             echo '<div class="vgd-card">';
-            echo '<a href="?page=vgd-business-template&template=' . urlencode($template_name) . '" class="vgd-template-card">';
             echo '<div class="vgd-card-content">';
             echo '<h4>' . esc_html(ucwords(str_replace('-', ' ', $template_name))) . '</h4>';
-            echo '<p>' . __('Click to use this template.', 'vgd') . '</p>';
-            echo '</div>';
+            echo '<p>' . __('Click to use or edit this template.', 'vgd') . '</p>';
+            
+            // "Use" button
+            echo '<a href="?page=vgd-business-template&template=' . urlencode($template_name) . '" class="vgd-button vgd-use-button">';
+            echo __('Use', 'vgd');
             echo '</a>';
+
+            // "Edit" button
+            echo '<a href="?page=brand-editor&template=' . urlencode($template_name) . '" class="vgd-button vgd-edit-button">';
+            echo __('Edit', 'vgd');
+            echo '</a>';
+
+            echo '</div>';
             echo '</div>';
         }
     } else {
@@ -92,6 +110,7 @@ function vgd_generate_business_card_template_cards($template_folder, $number_of_
 
     echo '</div>'; // Close grid layout
 }
+
 
 /**
  * Render the Brand tab with separate sections for logos and business cards.
@@ -114,3 +133,6 @@ function vgd_render_brand_tab() {
     vgd_generate_business_card_template_cards($business_template_folder);
     echo '</div>';
 }
+
+
+
