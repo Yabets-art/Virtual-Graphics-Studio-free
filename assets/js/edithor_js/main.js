@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
         editor = new CanvasEditor();
         window.editor = editor;
         window.templateManager= new TemplateManager(editor.canvas)
-        window.hintManager = new HintManager();
+        window.hintManager = new HintManager(); 
     } catch (error) {
         console.error('Error initializing editor:', error);
     }
