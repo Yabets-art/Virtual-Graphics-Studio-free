@@ -29,6 +29,7 @@ function vgd_autoload_classes() {
         'post/class-posts.php',
         'chat/class-ai-chat.php',
         'class-setting.php',
+        'brand/logo/class-logo-back.php',
     ];
 
     foreach ($classes as $class) {
@@ -172,19 +173,10 @@ function vgd_dashboard_page() {
 
 // Enqueue styles dynamically for plugin pages
 function vgd_enqueue_styles($hook_suffix) {
-    wp_enqueue_style('vgd-main-style', VGD_PLUGIN_URL . 'assets/css/style.css');
-    wp_enqueue_style('vgd-settings-style', VGD_PLUGIN_URL . 'assets/css/setting.css');
-    wp_enqueue_style('vgd-dashboard-style', VGD_PLUGIN_URL . 'assets/css/home.css');
-    wp_enqueue_style('vgd-nav-style', VGD_PLUGIN_URL . 'assets/css/nav.css');
-    wp_enqueue_style('vgd-brannd-style', VGD_PLUGIN_URL . 'assets/css/brannd.css');
-    wp_enqueue_style('vgd-editor-style', VGD_PLUGIN_URL . 'assets/css/editor.css');
-    wp_enqueue_style('swiper-css', 'https://unpkg.com/swiper/swiper-bundle.min.css');
-    wp_enqueue_script('swiper-js', 'https://unpkg.com/swiper/swiper-bundle.min.js', array('jquery'), null, true);
 
-    // Custom styles and scripts for the gallery
-    wp_enqueue_style('my-gallery-style', VGD_PLUGIN_URL . 'assets/css/gallery-style.css');
-    wp_enqueue_script('my-gallery-script', VGD_PLUGIN_URL . 'assets/js/gallery-script.js', array('swiper-js'), null, true);
-wp_enqueue_script('my-editor-script', VGD_PLUGIN_URL . 'assets/js/editor.js', array('swiper-js'), null, true);
+    wp_enqueue_script('vgd-logo-saver', VGD_PLUGIN_URL . 'assets/js/edithor_js/logo-saver.js', array('jquery'), null, true);
+    wp_enqueue_script('vgd-custom-js', plugin_dir_url(__FILE__) . 'assets/js/vgd-custom.js', ['swiper-js'], null, true);
+    wp_enqueue_script('tailwindcss', 'https://cdn.tailwindcss.com');
 }
 add_action('admin_enqueue_scripts', 'vgd_enqueue_styles');
 
@@ -221,5 +213,11 @@ function navbar_function() {
 
     echo '</nav>';
 }
+
+add_action('template_redirect', function() {
+    if (strpos($_SERVER['REQUEST_URI'], 'edithor.html') !== false) {
+        return; // Skip WordPress redirection
+    }
+});
 
 ?>
