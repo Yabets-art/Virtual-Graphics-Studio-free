@@ -1,0 +1,965 @@
+.color-input {
+    height: 40px; /* Reduced from 48px */
+}
+
+/* Footer buttons - Smaller size */
+.dialog-buttons {
+    padding: 16px 24px;
+    border-top: 1px solid #eee;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    background: #fff;
+}
+
+.dialog-buttons button {
+    padding: 8px 16px;
+    font-size: 14px;
+}
+
+.btn-cancel {
+    background: #f5f5f5;
+    color: #666;
+}
+
+.btn-cancel:hover {
+    background: #e0e0e0;
+    color: #333;
+}
+
+.btn-proceed {
+    background: #2196F3;
+    color: white;
+}
+
+.btn-proceed:hover {
+    background: #1E88E5;
+    transform: translateY(-1px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .dialog-content {
+        width: 95vw;
+        height: 80vh;
+    }
+
+    .dialog-body {
+        flex-direction: column;
+    }
+
+    .preview-section,
+    .input-section {
+        flex: none;
+    }
+
+    .preview-section {
+        height: 45%;
+    }
+
+    .input-section {
+        height: 55%;
+    }
+} 
+
+
+/* Wizard Dialog Base Styles */
+.wizard-dialog {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.wizard-dialog.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.wizard-dialog .dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(2px);
+    pointer-events: none;
+}
+
+.wizard-dialog .dialog-content {
+    position: relative;
+    background: white;
+    border-radius: 12px;
+    width: 500px;
+    min-height: auto;
+    padding: 32px;
+    text-align: center;
+    z-index: 2001;
+    transform: translateY(20px);
+    opacity: 0;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    pointer-events: auto;
+}
+
+.wizard-dialog.show .dialog-content {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+/* Step Specific Styles */
+.wizard-dialog.step1 .dialog-content {
+    width: 500px;
+}
+
+.wizard-dialog.step2 .dialog-content {
+    width: 500px;
+}
+
+.wizard-dialog.step3 .dialog-content {
+    width: 800px;
+    height: 80vh;
+    max-height: 600px;
+    display: flex;
+    flex-direction: column;
+}
+
+.wizard-dialog.step4 .dialog-content {
+    top: 10px;
+    width: 800px;
+    height: 85vh;
+    max-height: 600px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.wizard-dialog.step4 .dialog-body {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
+    overflow-y: auto;
+    height: calc(100% - 120px);
+}
+
+/* Dialog Elements */
+.wizard-dialog .dialog-close {
+    position: absolute;
+    right: 16px;
+    top: 16px;
+    width: 32px;
+    height: 32px;
+    background: #f5f5f5;
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 2002;
+}
+
+.wizard-dialog .dialog-close:hover {
+    background: #e0e0e0;
+    transform: rotate(90deg);
+}
+
+.wizard-dialog .dialog-close i {
+    font-size: 16px;
+    color: #666;
+}
+
+.wizard-dialog .dialog-body {
+    margin: 20px 0;
+}
+
+.wizard-dialog h2 {
+    margin-bottom: 24px;
+    color: #333;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+/* Form Elements */
+.wizard-dialog .form-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.wizard-dialog .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #333;
+    font-weight: 500;
+}
+
+.wizard-dialog .form-input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 16px;
+    transition: border-color 0.2s;
+}
+
+.wizard-dialog .form-input:focus {
+    border-color: #2196F3;
+    outline: none;
+}
+
+/* Buttons */
+.wizard-dialog .dialog-buttons {
+    margin-top: 24px;
+}
+
+.wizard-dialog .btn-continue,
+.wizard-dialog .btn-generate {
+    width: 100%;
+    padding: 12px;
+    background: #2196F3;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.wizard-dialog .btn-back {
+    position: absolute;
+    left: 24px;
+    top: 24px;
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    padding: 4px;
+}
+
+/* Industry Select */
+.wizard-dialog .industry-select {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    margin-bottom: 24px;
+    background: white;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .wizard-dialog .dialog-content {
+        width: 90%;
+        max-height: 90vh;
+        padding: 20px;
+        margin: 20px;
+    }
+}
+
+/* Template Preview Grid */
+.templates-grid {
+    height: calc(100% - 120px);
+    overflow-y: auto;
+    padding: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 16px;
+}
+
+/* Template Preview Card */
+.template-preview-card {
+    position: relative;
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.template-preview-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.template-preview-card.selected {
+    border-color: #2196F3;
+    box-shadow: 0 0 0 2px #2196F3;
+}
+
+.preview-image {
+    aspect-ratio: 1;
+    background: #f5f5f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.preview-image svg,
+.preview-image canvas {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.preview-info {
+    padding: 12px;
+    text-align: left;
+}
+
+.preview-info h4 {
+    margin: 0;
+    font-size: 14px;
+    color: #333;
+}
+
+.preview-info .category {
+    font-size: 12px;
+    color: #666;
+}
+
+.preview-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.template-preview-card:hover .preview-overlay {
+    opacity: 1;
+}
+
+.btn-select {
+    background: #2196F3;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-select:hover {
+    background: #1E88E5;
+    transform: scale(1.05);
+}
+
+/* Scrollbar Styling */
+.templates-grid::-webkit-scrollbar {
+    width: 8px;
+}
+
+.templates-grid::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.templates-grid::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.templates-grid::-webkit-scrollbar-thumb:hover {
+    background: #666;
+}
+
+/* Mobile Responsive Adjustments */
+@media (max-width: 768px) {
+    .templates-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 12px;
+        padding: 12px;
+    }
+
+    .preview-info h4 {
+        font-size: 12px;
+    }
+
+    .preview-info .category {
+        font-size: 10px;
+    }
+}
+
+/* Create New Logo Card Styles */
+.template-card.create-new {
+    position: relative;
+    background: white;
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    height: 250px;
+    display: flex;
+    flex-direction: column;
+}
+
+.template-card.create-new:hover {
+    border-color: #2196F3;
+    background: #f8f9fa;
+    transform: translateY(-2px);
+}
+
+.add-template-preview {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.add-template-preview i {
+    font-size: 48px;
+    color: #2196F3;
+    transition: transform 0.2s ease;
+}
+
+.template-card.create-new:hover .add-template-preview i {
+    transform: scale(1.1);
+}
+
+.template-card .template-info {
+    padding: 16px;
+    text-align: center;
+    border-top: 1px solid #eee;
+}
+
+.template-card .template-info h4 {
+    margin: 0;
+    font-size: 16px;
+    color: #333;
+    font-weight: 500;
+}
+
+.template-card .template-category-name {
+    font-size: 14px;
+    color: #666;
+}
+
+/* Template Selection Step Styles */
+.wizard-dialog.step3 .dialog-content {
+    width: 800px;
+    height: 80vh;
+    max-height: 600px;
+    display: flex;
+    flex-direction: column;
+}
+
+.wizard-dialog.step3 .dialog-body {
+    flex: 1;
+    overflow: hidden;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+}
+
+.selected-industry {
+    text-align: center;
+    margin-bottom: 24px;
+    flex-shrink: 0;
+}
+
+.templates-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.template-preview-card {
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.template-preview-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.preview-image {
+    aspect-ratio: 1;
+    background: #f5f5f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Continue Button for Step 3 */
+.wizard-dialog.step3 .btn-continue {
+    position: relative;
+    padding-right: 40px;
+}
+
+.wizard-dialog.step3 .btn-continue::after {
+    content: '→';
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 20px;
+    transition: transform 0.2s ease;
+}
+
+.wizard-dialog.step3 .btn-continue:hover::after {
+    transform: translate(4px, -50%);
+}
+
+/* Color Scheme Step Styles */
+.color-schemes {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+    padding: 10px;
+    margin-top: 20px;
+    overflow-y: auto;
+    max-height: calc(100% - 350px);
+}
+
+.color-scheme-card {
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    height: 120px;
+}
+
+.color-scheme-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.color-scheme-card.selected {
+    border-color: #2196F3;
+    box-shadow: 0 0 0 2px #2196F3;
+}
+
+.color-preview {
+    height: 80px;
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px 8px 0 0;
+}
+
+.color-preview .gradient-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+}
+
+.color-preview .color-swatch {
+    position: relative;
+    z-index: 2;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin: 10px;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.color-preview .color-swatch.primary {
+    margin-right: 5px;
+}
+
+.color-preview .color-swatch.secondary {
+    margin-left: 5px;
+}
+
+.color-scheme-info {
+    padding: 12px;
+    text-align: center;
+}
+
+.color-scheme-info h4 {
+    margin: 0;
+    font-size: 14px;
+}
+
+/* Button States */
+.wizard-dialog .btn-continue:disabled,
+.wizard-dialog .btn-generate:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.wizard-dialog .btn-continue:disabled:hover,
+.wizard-dialog .btn-generate:disabled:hover {
+    transform: none;
+    background: #ccc;
+}
+
+/* Template Card Adjustments */
+.template-card {
+    position: relative;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    width: 200px;
+    transition: all 0.2s ease;
+}
+
+.template-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Continue Button Styling */
+.wizard-dialog.step3 .dialog-buttons {
+    padding: 16px 24px;
+    border-top: 1px solid #eee;
+    background: white;
+    margin-top: auto;
+}
+
+.wizard-dialog.step3 .btn-continue {
+    width: auto;
+    min-width: 150px;
+    padding: 12px 24px;
+}
+
+.selected-industry {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.selected-industry h3 {
+    color: #333;
+    margin: 0;
+    font-size: 20px;
+}
+
+.category-underline {
+    height: 2px;
+    background: #2196F3;
+    width: 60px;
+    margin: 8px auto;
+}
+
+.preview-section {
+    padding: 24px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 24px;
+}
+
+.color-schemes {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 16px;
+    max-height: 500px;
+    height: 300px;
+    overflow-y: auto;
+}
+
+/* Template Selection Styles */
+.template-preview-card {
+    position: relative;
+    background: white;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.template-preview-card.selected {
+    border-color: #2196F3;
+    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
+}
+
+.template-preview-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Continue Button Styles */
+.wizard-dialog.step3 .btn-continue {
+    position: relative;
+    padding: 12px 40px 12px 24px;
+    background: #2196F3;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.wizard-dialog.step3 .btn-continue:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.wizard-dialog.step3 .btn-continue:not(:disabled):hover {
+    background: #1976D2;
+    transform: translateY(-1px);
+}
+
+.wizard-dialog.step3 .btn-continue::after {
+    content: '→';
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 20px;
+    transition: transform 0.2s ease;
+}
+
+.wizard-dialog.step3 .btn-continue:not(:disabled):hover::after {
+    transform: translate(4px, -50%);
+}
+
+/* Selection Overlay */
+.preview-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.template-preview-card:hover .preview-overlay,
+.template-preview-card.selected .preview-overlay {
+    opacity: 1;
+}
+
+.btn-select {
+    background: #2196F3;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-select:hover {
+    background: #1976D2;
+    transform: scale(1.05);
+}
+
+/* Template sections */
+.preferred-templates,
+.all-templates {
+    margin: 20px 0;
+}
+
+.preferred-templates h4,
+.all-templates h4 {
+    margin: 0 0 16px 0;
+    color: #333;
+    font-size: 18px;
+}
+
+.separator-line {
+    height: 1px;
+    background: #e0e0e0;
+    margin: 24px 0;
+}
+
+/* Template grid */
+.templates-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.templates-grid.preferred {
+    margin-bottom: 0;
+}
+
+/* Preview canvas container */
+.preview-canvas-container {
+    width: 200px;
+    height: 200px;
+    background: #f5f5f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+}
+
+.preview-canvas-container svg {
+    width: 100%;
+    height: 100%;
+    max-width: 180px;
+    max-height: 180px;
+}
+
+.preview-error {
+    color: #666;
+    text-align: center;
+    padding: 20px;
+    font-size: 14px;
+}
+
+/* Scrollable content */
+.wizard-dialog.step3 .dialog-body {
+    overflow-y: auto;
+    padding-right: 12px;
+}
+
+/* Continue button fix */
+.wizard-dialog.step3 .dialog-buttons {
+    position: sticky;
+    bottom: 0;
+    background: white;
+    padding: 16px 24px;
+    border-top: 1px solid #eee;
+    margin-top: auto;
+}
+
+.template-preview-card {
+    width: 200px;
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.2s ease;
+}
+
+.preview-section {
+    width: 300px;
+    height: 350px;
+    margin: 0 auto 20px;
+    background: #f5f5f5;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.preview-section svg {
+    width: 100%;
+    height: 100%;
+    max-width: 280px;
+    max-height: 280px;
+    transition: all 0.3s ease;
+}
+
+.color-name {
+    padding: 8px;
+    text-align: center;
+    font-size: 14px;
+}
+
+/* Ensure buttons are visible */
+.wizard-dialog.step4 .dialog-buttons {
+    position: sticky;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    padding: 16px 24px;
+    border-top: 1px solid #eee;
+    margin-top: auto;
+    z-index: 100;
+}
+
+/* Business Card Styles */
+.create-business-card-btn {
+    display: block;
+    width: 100%;
+    padding: 16px;
+    margin-top: 32px;
+    background: #f5f5f5;
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.create-business-card-btn:hover {
+    background: #e0e0e0;
+    border-color: #999;
+}
+
+.create-business-card-btn i {
+    margin-right: 8px;
+    font-size: 20px;
+}
+
+/* Business Card Wizard Styles */
+.wizard-dialog .form-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.wizard-dialog input {
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.photo-upload {
+    grid-template-columns: 1fr !important;
+}
+
+.photo-upload label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px;
+    background: #f5f5f5;
+    border: 2px dashed #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.photo-upload input {
+    display: none;
+}

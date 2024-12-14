@@ -28,6 +28,7 @@ function vgd_autoload_classes() {
         'post/class-posts.php',
         'chat/class-ai-chat.php',
         'class-setting.php',
+        'brand/logo/class-logo-back.php',
     ];
 
     foreach ($classes as $class) {
@@ -176,6 +177,9 @@ function vgd_enqueue_styles($hook_suffix) {
     wp_enqueue_style('vgd-dashboard-style', VGD_PLUGIN_URL . 'assets/css/home.css');
     wp_enqueue_style('vgd-nav-style', VGD_PLUGIN_URL . 'assets/css/nav.css');
     wp_enqueue_style('vgd-brannd-style', VGD_PLUGIN_URL . 'assets/css/brannd.css');
+    wp_enqueue_script('vgd-logo-saver', VGD_PLUGIN_URL . 'assets/js/edithor_js/logo-saver.js', array('jquery'), null, true);
+
+    wp_enqueue_script('tailwindcss', 'https://cdn.tailwindcss.com');
 }
 add_action('admin_enqueue_scripts', 'vgd_enqueue_styles');
 
@@ -212,17 +216,4 @@ function navbar_function() {
 
     echo '</nav>';
 }
-
-
-function my_gallery_plugin_enqueue_scripts() {
-    // Swiper.js (or your preferred library)
-    wp_enqueue_style('swiper-css', 'https://unpkg.com/swiper/swiper-bundle.min.css');
-    wp_enqueue_script('swiper-js', 'https://unpkg.com/swiper/swiper-bundle.min.js', array('jquery'), null, true);
-
-    // Custom styles and scripts for the gallery
-    wp_enqueue_style('my-gallery-style', VGD_PLUGIN_URL . 'assets/css/gallery.css');
-    wp_enqueue_script('my-gallery-script', VGD_PLUGIN_URL . 'assets/js/gallery.js', array('swiper-js'), null, true);
-}
-add_action('wp_enqueue_scripts', 'my_gallery_plugin_enqueue_scripts');
-
 ?>

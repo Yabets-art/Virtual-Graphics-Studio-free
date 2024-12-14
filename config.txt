@@ -1,7 +1,7 @@
 home=enable
 logo=enable
 banner=enable
-chat=enable
+chat=disable
 post=enable
 youtube=enable
 setting=enable
