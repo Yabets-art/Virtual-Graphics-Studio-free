@@ -16,14 +16,10 @@ if (!defined('ABSPATH')) {
 function vgd_render_dashboard_tab() {
     echo '<h1 class="text-3xl font-bold text-center mb-4">' . __('Welcome to Virtual Graphic Designer', 'vgd') . '</h1>';
     echo '<p class="text-lg text-gray-600 text-center mb-6">' . __('Select a tool to get started:', 'vgd') . '</p>';
-    echo my_auto_sliding_gallery();
-
+    // echo my_auto_sliding_gallery();
     echo addAll();
 }
 
-// Gallery Functionality
-
-}
 
 // Gallery Function
 
