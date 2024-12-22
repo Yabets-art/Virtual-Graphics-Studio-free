@@ -1,4 +1,5 @@
 <?php
+
 function vgd_render_youtube_tab() {
     echo '<div class="max-w-[1800px] mx-auto px-4 py-6">';
     echo '<div class="flex items-center justify-between mb-6 border-b border-gray-200 pb-2">';

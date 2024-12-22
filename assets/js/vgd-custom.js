@@ -9,6 +9,6 @@ document.addEventListener('DOMContentLoaded', function () {
             prevEl: '.swiper-button-prev',
         },
         slidesPerView: 'auto',
-        spaceBetween: 10,
+        spaceBetween: 16, // Add spacing between slides
     });
 });
