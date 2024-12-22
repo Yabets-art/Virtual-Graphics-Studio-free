@@ -25,6 +25,7 @@ class BusinessCardDisplay {
             }
         };
         this.savedBusinessCards = [];
+        this.ajaxUrl = window.location.origin + '/wordpress/wp-admin/admin-ajax.php';
         this.initialize();
     }
 
@@ -35,72 +36,229 @@ class BusinessCardDisplay {
 
     async fetchSavedCards() {
         try {
-            const response = await fetch(`${window.location.origin}/wordpress/wp-admin/admin-ajax.php?action=get_saved_items&type=cards`);
+            const formData = new FormData();
+            formData.append('action', 'get_saved_items');
+            formData.append('type', 'cards');
+            
+            const response = await fetch(this.ajaxUrl, {
+                method: 'POST',
+                credentials: 'same-origin',
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
             const data = await response.json();
-            if (data.success && data.data.cards) {
+            console.log('Fetched cards data:', data); // Debug log
+
+            if (data.success && data.data && data.data.cards) {
                 this.savedBusinessCards = data.data.cards;
+                console.log('Saved cards:', this.savedBusinessCards);
+            } else {
+                console.warn('No cards found or invalid response format');
+                this.savedBusinessCards = [];
             }
         } catch (error) {
             console.error('Error fetching saved business cards:', error);
+            this.savedBusinessCards = [];
         }
     }
 
     renderSavedCards() {
-        if (!this.savedBusinessCards.length) return null;
-
         const container = document.createElement('div');
-        container.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-6';
+        container.className = 'bg-gray-100/50 rounded-lg p-4';
 
-        const savedCardsHTML = this.savedBusinessCards.map(card => `
-            <div class="bg-white rounded-xl shadow-lg overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl" data-id="${card.id}">
-                <div class="aspect-video bg-gray-50 p-4 flex items-center justify-center border-b border-gray-100">
-                    <img src="${card.imageUrl}" alt="Business Card Preview" class="max-w-full max-h-full object-contain">
+        // Add controls section (similar to logo display)
+        const controls = document.createElement('div');
+        controls.className = 'flex items-center justify-between mb-4';
+        controls.innerHTML = `
+            <div class="flex items-center gap-4">
+                <div class="relative">
+                    <select id="sortSelect" class="appearance-none bg-white border border-gray-200 rounded-md py-2 px-4 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="newest">Newest First</option>
+                        <option value="oldest">Oldest First</option>
+                        <option value="name">Name</option>
+                    </select>
+                    <i class="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
                 </div>
-                <div class="p-4 flex flex-col flex-grow">
-                    <h3 class="text-lg font-semibold text-gray-800">${card.data.personalInfo.firstName} ${card.data.personalInfo.lastName}</h3>
-                    <p class="text-sm text-gray-600">${card.data.personalInfo.title}</p>
-                    <p class="text-sm text-gray-600 mb-4">${card.data.personalInfo.company}</p>
-                    <div class="text-xs text-gray-500 mt-auto">
-                        <p>Created: ${new Date(card.dateCreated).toLocaleDateString()}</p>
-                        <p>Modified: ${new Date(card.lastModified).toLocaleDateString()}</p>
-                    </div>
-                </div>
-                <div class="flex gap-2 p-4 border-t border-gray-100">
-                    <button class="flex-1 flex items-center justify-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-600 py-2 px-4 rounded-md transition-colors duration-200 edit-card" data-id="${card.id}">
-                        <i class="fas fa-edit"></i>
-                        <span>Edit</span>
-                    </button>
-                    <button class="flex-1 flex items-center justify-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 py-2 px-4 rounded-md transition-colors duration-200 delete-card" data-id="${card.id}">
-                        <i class="fas fa-trash"></i>
-                        <span>Delete</span>
-                    </button>
+                <div class="relative">
+                    <input type="text" id="searchInput" placeholder="Search cards..." 
+                        class="bg-white border border-gray-200 rounded-md py-2 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-56">
+                    <i class="fas fa-search absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
                 </div>
             </div>
-        `).join('');
+            <div class="flex gap-2">
+                <span class="text-sm text-gray-500">${this.savedCards?.length || 0} cards</span>
+            </div>
+        `;
 
-        container.innerHTML = savedCardsHTML;
+        // Create grid container
+        const gridContainer = document.createElement('div');
+        gridContainer.className = 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 p-4';
+
+        // Create New Card
+        gridContainer.innerHTML = `
+            <div class="bg-white rounded-lg shadow-sm overflow-hidden border border-dashed border-gray-300 hover:border-blue-400 transition-all duration-200 cursor-pointer group h-[280px]" id="createNewCard">
+                <div class="w-full h-full flex flex-col items-center justify-center p-4 bg-gray-50">
+                    <i class="fas fa-plus-circle text-3xl text-blue-500 mb-3 group-hover:scale-110 transition-transform"></i>
+                    <h4 class="text-base font-medium text-gray-600 group-hover:text-blue-500 transition-colors">Create New Card</h4>
+                    <span class="text-sm text-gray-400 mt-2">Start Fresh</span>
+                </div>
+            </div>
+        `;
+
+        // Add saved cards
+        if (this.savedCards && this.savedCards.length > 0) {
+            const savedCardsHTML = this.savedCards.map(card => `
+                <div class="group bg-white rounded-lg shadow-sm overflow-hidden transition-all duration-200 hover:shadow-md h-[280px] relative card-item" 
+                     data-id="${card.id}"
+                     data-date="${new Date(card.dateCreated).toISOString()}">
+                    <!-- ID Badge -->
+                    <div class="absolute top-2 left-2 bg-black/50 text-white px-2 py-1 rounded text-xs z-10 transition-opacity duration-200 group-hover:opacity-0">
+                        ID: ${card.id}
+                    </div>
+
+                    <!-- Main Image Container -->
+                    <div class="h-full w-full relative overflow-hidden">
+                        <!-- Preview Canvas Container -->
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="canvas-container w-full h-full">
+                                <canvas class="saved-card-canvas"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Bottom Actions -->
+                        <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                            <div class="flex gap-2">
+                                <button class="flex-1 flex items-center justify-center gap-2 bg-white/90 hover:bg-white text-blue-600 py-2 px-4 rounded-md text-sm transition-colors duration-200 edit-card">
+                                    <i class="fas fa-edit"></i>
+                                    <span>Edit</span>
+                                </button>
+                                <button class="flex-1 flex items-center justify-center gap-2 bg-white/90 hover:bg-white text-red-600 py-2 px-4 rounded-md text-sm transition-colors duration-200 delete-card">
+                                    <i class="fas fa-trash"></i>
+                                    <span>Delete</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            gridContainer.innerHTML += savedCardsHTML;
+        }
+
+        container.appendChild(controls);
+        container.appendChild(gridContainer);
+
+        // Initialize canvases for saved cards
+        setTimeout(() => {
+            this.savedCards?.forEach(card => {
+                const cardElement = container.querySelector(`[data-id="${card.id}"] canvas`);
+                if (cardElement) {
+                    const fabricCanvas = new fabric.Canvas(cardElement, {
+                        width: 300,
+                        height: 180,
+                        backgroundColor: '#ffffff'
+                    });
+                    this.renderCardPreview(fabricCanvas, card);
+                }
+            });
+        }, 100);
 
         // Add event listeners
+        const createNewButton = container.querySelector('#createNewCard');
+        createNewButton?.addEventListener('click', () => {
+            this.showStep1Dialog();
+        });
+
+        // Sort and filter functionality
+        const sortSelect = container.querySelector('#sortSelect');
+        const searchInput = container.querySelector('#searchInput');
+
+        sortSelect?.addEventListener('change', () => this.sortCards(sortSelect.value));
+        searchInput?.addEventListener('input', (e) => this.filterCards(e.target.value));
+
+        // Edit and Delete handlers
         container.querySelectorAll('.edit-card').forEach(button => {
             button.addEventListener('click', (e) => {
-                const cardId = e.target.dataset.id;
-                const card = this.savedBusinessCards.find(c => c.id === cardId);
+                e.stopPropagation();
+                const cardId = e.target.closest('.card-item').dataset.id;
+                const card = this.savedCards.find(c => c.id === cardId);
                 if (card) {
-                    this.loadCardForEditing(card);
+                    this.editCard(card);
                 }
             });
         });
 
         container.querySelectorAll('.delete-card').forEach(button => {
-            button.addEventListener('click', async (e) => {
-                const cardId = e.target.dataset.id;
-                if (confirm('Are you sure you want to delete this business card?')) {
-                    await this.deleteCard(cardId);
+            button.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (confirm('Are you sure you want to delete this card?')) {
+                    const cardId = e.target.closest('.card-item').dataset.id;
+                    this.deleteCard(cardId);
                 }
             });
         });
 
         return container;
+    }
+
+    // Sort cards function
+    sortCards(sortBy) {
+        const cards = Array.from(document.querySelectorAll('.card-item'));
+        const createNewCard = document.querySelector('#createNewCard');
+        const container = createNewCard.parentElement;
+
+        cards.sort((a, b) => {
+            switch(sortBy) {
+                case 'newest':
+                    return new Date(b.dataset.date) - new Date(a.dataset.date);
+                case 'oldest':
+                    return new Date(a.dataset.date) - new Date(b.dataset.date);
+                case 'name':
+                    return a.dataset.id.localeCompare(b.dataset.id);
+                default:
+                    return 0;
+            }
+        });
+
+        // Clear and rebuild container
+        container.innerHTML = '';
+        container.appendChild(createNewCard);
+        cards.forEach(card => container.appendChild(card));
+    }
+
+    // Filter cards function
+    filterCards(searchTerm) {
+        const cards = document.querySelectorAll('.card-item');
+        const searchLower = searchTerm.toLowerCase();
+
+        cards.forEach(card => {
+            const id = card.dataset.id.toLowerCase();
+            const matches = id.includes(searchLower);
+            card.style.display = matches ? '' : 'none';
+        });
+    }
+
+    // Render card preview function
+    renderCardPreview(canvas, card) {
+        // Clear existing content
+        canvas.clear();
+
+        // Set background color
+        canvas.setBackgroundColor('#ffffff', canvas.renderAll.bind(canvas));
+
+        // Add card content (this will depend on your card structure)
+        if (card.content) {
+            fabric.util.enlivenObjects(card.content.objects, (objects) => {
+                objects.forEach(obj => {
+                    canvas.add(obj);
+                });
+                canvas.renderAll();
+            });
+        }
     }
 
     async loadCardForEditing(card) {
@@ -171,10 +329,6 @@ class BusinessCardDisplay {
         const businessCardSection = document.createElement('div');
         businessCardSection.className = 'business-card-section';
 
-        // Create "Create New" card
-        const createNewCard = this.createNewBusinessCard();
-        businessCardSection.appendChild(createNewCard);
-
         // Create saved cards section
         const savedCardsContainer = this.renderSavedCards();
         if (savedCardsContainer) {
@@ -188,28 +342,6 @@ class BusinessCardDisplay {
         if (targetContainer) {
             targetContainer.appendChild(mainContainer);
         }
-    }
-
-    createNewBusinessCard() {
-        const card = document.createElement('div');
-        card.className = 'bg-white rounded-xl shadow-lg p-6 cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-2 m-6';
-        card.innerHTML = `
-            <div class="flex flex-col items-center justify-center space-y-4">
-                <div class="w-16 h-16 flex items-center justify-center rounded-full bg-blue-100 text-blue-600">
-                    <i class="fas fa-id-card text-2xl"></i>
-                </div>
-                <div class="text-center">
-                    <h4 class="text-lg font-semibold text-gray-800">Create New Business Card</h4>
-                    <span class="text-sm text-gray-600">Start Fresh</span>
-                </div>
-            </div>
-        `;
-
-        card.addEventListener('click', () => {
-            this.showStep1Dialog();
-        });
-
-        return card;
     }
 
     showStep1Dialog() {
@@ -226,11 +358,6 @@ class BusinessCardDisplay {
                     </div>
                     <div class="mb-4">
                         <h2 class="text-xl font-semibold text-gray-900">Step 1: Personal Information</h2>
-                        <div class="flex justify-center space-x-2 mt-4">
-                            <span class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center">1</span>
-                            <span class="w-8 h-8 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center">2</span>
-                            <span class="w-8 h-8 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center">3</span>
-                        </div>
                     </div>
                     <div class="space-y-4">
                         <div class="grid grid-cols-2 gap-4">
@@ -257,39 +384,55 @@ class BusinessCardDisplay {
 
     showStep2Dialog() {
         const dialog = document.createElement('div');
-        dialog.className = 'wizard-dialog business-card step2';
+        dialog.className = 'fixed inset-0 z-50 overflow-y-auto';
         dialog.innerHTML = `
-            <div class="dialog-overlay"></div>
-            <div class="dialog-content">
-                <button class="dialog-close"><i class="fas fa-times"></i></button>
-                <div class="dialog-header">
-                    <h2>Step 2: Contact Information</h2>
-                    <div class="step-indicator">
-                        <span class="step completed">1</span>
-                        <span class="step active">2</span>
-                        <span class="step">3</span>
+            <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"></div>
+            <div class="flex min-h-full items-center justify-center p-4">
+                <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
+                    <div class="absolute right-0 top-0 pr-4 pt-4">
+                        <button class="dialog-close rounded-md bg-white text-gray-400 hover:text-gray-500">
+                            <i class="fas fa-times"></i>
+                        </button>
                     </div>
-                </div>
-                <div class="dialog-body">
-                    <div class="form-group">
-                        <input type="tel" id="phoneNumber" placeholder="Phone Number" required>
-                        <input type="email" id="email" placeholder="Email Address" required>
+                    <div class="mb-4">
+                        <h2 class="text-xl font-semibold text-gray-900">Step 2: Contact Information</h2>
                     </div>
-                    <div class="form-group">
-                        <input type="url" id="website" placeholder="Website (optional)">
-                        <input type="text" id="location" placeholder="Location" required>
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <input type="tel" id="phoneNumber" placeholder="Phone Number" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                            <input type="email" id="email" placeholder="Email Address" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <input type="url" id="website" placeholder="Website (optional)" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <input type="text" id="location" placeholder="Location" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                        </div>
+                        <div class="mt-4">
+                            <label class="block w-full cursor-pointer">
+                                <div class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg hover:bg-gray-50 transition-colors relative">
+                                    <div class="photo-preview hidden absolute inset-0">
+                                        <img src="" alt="Profile preview" class="w-full h-full object-contain">
+                                    </div>
+                                    <div class="upload-prompt flex flex-col items-center justify-center pt-5 pb-6">
+                                        <i class="fas fa-cloud-upload-alt text-2xl text-gray-400 mb-2"></i>
+                                        <p class="text-sm text-gray-500">Upload Profile Photo (optional)</p>
+                                    </div>
+                                    <input type="file" id="photo" accept="image/*" class="hidden">
+                                </div>
+                            </label>
+                        </div>
                     </div>
-                    <div class="form-group photo-upload">
-                        <label for="photo">
-                            <i class="fas fa-camera"></i>
-                            <span>Upload Profile Photo (optional)</span>
-                        </label>
-                        <input type="file" id="photo" accept="image/*">
+                    <div class="mt-6 flex justify-between gap-4">
+                        <button class="btn-back flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors">
+                            Back
+                        </button>
+                        <button class="btn-continue flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed" disabled>
+                            Continue to Design
+                        </button>
                     </div>
-                </div>
-                <div class="dialog-buttons">
-                    <button class="btn-back">Back</button>
-                    <button class="btn-continue" disabled>Continue to Design</button>
                 </div>
             </div>
         `;
@@ -300,39 +443,49 @@ class BusinessCardDisplay {
 
     showStep3Dialog() {
         const dialog = document.createElement('div');
-        dialog.className = 'wizard-dialog business-card-wizard step3';
+        dialog.className = 'fixed inset-0 z-50 overflow-y-auto';
         dialog.innerHTML = `
-            <div class="dialog-overlay"></div>
-            <div class="dialog-content">
-            <button class="btn-back">Back</button>
-                <button class="dialog-close"><i class="fas fa-times"></i></button>
-                <div class="dialog-header">
+            <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"></div>
+            <div class="flex min-h-full items-center justify-center p-4">
+                <div class="relative transform overflow-hidden rounded-lg bg-white w-full max-w-4xl mx-auto">
+                    <!-- Header -->
+                    <div class="flex items-center justify-between p-4 border-b border-gray-200">
+                        <button class="dialog-back p-2 rounded-full hover:bg-gray-100 transition-colors">
+                            <i class="fas fa-arrow-left text-gray-600"></i>
+                        </button>
+                        <h2 class="text-xl font-semibold text-gray-900">Step 3: Choose Your Design</h2>
+                        <button class="dialog-close p-2 rounded-full hover:bg-gray-100 transition-colors">
+                            <i class="fas fa-times text-gray-600"></i>
+                        </button>
+                    </div>
 
-                    <h2>Step 3: Choose Your Design</h2>
-                    <div class="step-indicator">
-                        <span class="step completed">1</span>
-                        <span class="step completed">2</span>
-                        <span class="step active">3</span>
-                    </div>
-                </div>
-                <div class="dialog-body">
-                    <div class="business-card-templates-grid">
-                        ${window.businessTemplates.map((template, index) => `
-                            <div class="business-card-preview-card" data-template-index="${index}">
-                                <div class="business-card-canvas-wrapper">
-                                    <canvas class="business-card-canvas"></canvas>
+                    <!-- Templates Grid -->
+                    <div class="p-6">
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-6 max-h-[60vh] overflow-y-auto">
+                            ${window.businessTemplates.map((template, index) => `
+                                <div class="template-card cursor-pointer rounded-lg overflow-hidden border-2 border-transparent hover:border-blue-500 transition-all duration-200" 
+                                     data-template-index="${index}">
+                                    <div class="card-preview-container relative bg-white p-4" style="aspect-ratio: 1.67/1;">
+                                        <canvas class="template-preview-canvas absolute inset-0 w-full h-full"></canvas>
+                                    </div>
+                                    <div class="p-3 bg-white border-t border-gray-100">
+                                        <h4 class="font-medium text-gray-900">${template.name}</h4>
+                                        <p class="text-sm text-gray-500">${template.category}</p>
+                                    </div>
                                 </div>
-                                <div class="business-card-preview-info">
-                                    <h4>${template.name}</h4>
-                                    <span class="business-card-category">${template.category}</span>
-                                </div>
-                            </div>
-                        `).join('')}
+                            `).join('')}
+                        </div>
                     </div>
-                </div>
-                <div class="dialog-buttons">
-                    
-                    <button class="btn-continue" disabled>Create Business Card</button>
+
+                    <!-- Footer Actions -->
+                    <div class="flex justify-end gap-3 p-4 border-t border-gray-200">
+                        <button class="btn-back px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors">
+                            Back
+                        </button>
+                        <button class="btn-continue px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed" disabled>
+                            Create Business Card
+                        </button>
+                    </div>
                 </div>
             </div>
         `;
@@ -340,133 +493,133 @@ class BusinessCardDisplay {
         this.setupStep3Listeners(dialog);
         this.showDialog(dialog);
 
-        // Initialize canvases after dialog is shown
-        requestAnimationFrame(() => {
-            this.initializePreviewCanvases(dialog);
-        });
+        // Initialize template previews after dialog is shown
+        setTimeout(() => {
+            this.initializeTemplatePreviews(dialog);
+        }, 100);
     }
 
-    initializePreviewCanvases(dialog) {
-        // Initialize main preview canvas with larger dimensions
-        const mainPreviewCanvas = new fabric.Canvas('mainBusinessCardCanvas', {
-            width: 600,
-            height: 300,
-            backgroundColor: '#ffffff'
-        });
-
-        // Initialize template preview canvases
-        const templateCards = dialog.querySelectorAll('.business-card-preview-card');
-        templateCards.forEach((card, index) => {
-            const canvas = new fabric.Canvas(card.querySelector('.business-card-canvas'), {
-                width: 600,
-                height: 200,
-                backgroundColor: '#ffffff'
-            });
-
-            const template = window.businessTemplates[index];
-            if (template && template.data) {
-                this.renderTemplatePreview(canvas, template, true);
-            }
-
-            card.addEventListener('click', () => {
-                templateCards.forEach(c => c.classList.remove('selected'));
-                card.classList.add('selected');
-                this.wizardData.designChoices.selectedTemplate = template;
-                
-                // Enable the continue button and add click handler
-                const continueBtn = dialog.querySelector('.btn-continue');
-                continueBtn.disabled = false;
-                continueBtn.onclick = () => this.saveToIndexDBAndRedirect(template);
-            });
-        });
-    }
-
-    renderTemplatePreview(canvas, template, isThumbnail) {
-        canvas.clear();
+    initializeTemplatePreviews(dialog) {
+        const templateCards = dialog.querySelectorAll('.template-card');
         
-        const scale = isThumbnail ? 0.3 : 0.5;
-        const templateData = typeof template.data === 'string' ? 
-            JSON.parse(template.data) : template.data;
-
-        const customizedTemplate = JSON.parse(JSON.stringify(templateData));
-        customizedTemplate.objects = customizedTemplate.objects.map(obj => {
-            if (obj.type === 'i-text' || obj.type === 'text') {
-                // Set default text properties
-                obj.originX = 'center';
-                obj.originY = 'center';
-                obj.textAlign = 'center';
-                obj.left = canvas.width / 2;
+        templateCards.forEach((card, index) => {
+            const canvas = card.querySelector('.template-preview-canvas');
+            const container = card.querySelector('.card-preview-container');
+            const template = window.businessTemplates[index];
+            
+            if (canvas && template && container) {
+                // Set canvas dimensions
+                const containerWidth = container.offsetWidth;
+                const containerHeight = containerWidth / 1.67; // Maintain aspect ratio
                 
-                // Check text content for keywords
-                if (obj.text.includes('{{firstName}}')) {
-                    obj.text = this.wizardData?.personalInfo?.firstName || 'First Name';
-                    obj.fontSize = isThumbnail ? 16 : 24;
-                }
-                else if (obj.text.includes('{{lastName}}')) {
-                    obj.text = this.wizardData?.personalInfo?.lastName || 'Last Name';
-                    obj.fontSize = isThumbnail ? 16 : 24;
-                }
-                else if (obj.text.includes('{{title}}')) {
-                    obj.text = this.wizardData?.personalInfo?.title || 'Job Title';
-                    obj.fontSize = isThumbnail ? 12 : 18;
-                }
-                else if (obj.text.includes('{{company}}')) {
-                    obj.text = this.wizardData?.personalInfo?.company || 'Company Name';
-                    obj.fontSize = isThumbnail ? 12 : 18;
-                }
-                else if (obj.text.includes('{{phone}}')) {
-                    obj.text = this.wizardData?.contactInfo?.phoneNumber || 'Phone Number';
-                    obj.fontSize = isThumbnail ? 10 : 14;
-                }
-                else if (obj.text.includes('{{email}}')) {
-                    obj.text = this.wizardData?.contactInfo?.email || 'Email Address';
-                    obj.fontSize = isThumbnail ? 10 : 14;
-                }
-                else if (obj.text.includes('{{website}}')) {
-                    obj.text = this.wizardData?.contactInfo?.website || 'Website';
-                    obj.fontSize = isThumbnail ? 10 : 14;
-                }
-                else if (obj.text.includes('{{location}}')) {
-                    obj.text = this.wizardData?.contactInfo?.location || 'Location';
-                    obj.fontSize = isThumbnail ? 10 : 14;
-                }
-                else if (obj.text.includes('{{photo}}')) {
-                    // Handle photo placeholder
-                    if (this.wizardData?.contactInfo?.photo) {
-                        fabric.Image.fromURL(this.wizardData.contactInfo.photo, (img) => {
-                            img.scaleToHeight(obj.height * scale);
-                            img.scaleToWidth(obj.width * scale);
-                            img.set({
-                                left: obj.left * scale,
-                                top: obj.top * scale,
-                                originX: 'center',
-                                originY: 'center'
+                const fabricCanvas = new fabric.Canvas(canvas, {
+                    width: containerWidth,
+                    height: containerHeight,
+                    backgroundColor: '#ffffff',
+                    selection: false
+                });
+
+                // Render template preview
+                if (template.data) {
+                    try {
+                        const templateData = typeof template.data === 'string' ? 
+                            JSON.parse(template.data) : template.data;
+
+                        fabric.util.enlivenObjects(templateData.objects, (objects) => {
+                            // Calculate bounds of all objects
+                            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+                            objects.forEach(obj => {
+                                const bounds = obj.getBoundingRect();
+                                minX = Math.min(minX, bounds.left);
+                                minY = Math.min(minY, bounds.top);
+                                maxX = Math.max(maxX, bounds.left + bounds.width);
+                                maxY = Math.max(maxY, bounds.top + bounds.height);
                             });
-                            canvas.add(img);
-                            canvas.renderAll();
+
+                            const groupWidth = maxX - minX;
+                            const groupHeight = maxY - minY;
+
+                            // Calculate scale to fit container
+                            const scaleX = (containerWidth * 0.8) / groupWidth;
+                            const scaleY = (containerHeight * 0.8) / groupHeight;
+                            const scale = Math.min(scaleX, scaleY);
+
+                            // Add and position objects
+                            objects.forEach(obj => {
+                                // Customize text if needed
+                                if (obj.type === 'text' || obj.type === 'i-text') {
+                                    this.customizeTextObject(obj, this.wizardData);
+                                }
+
+                                // Scale and position object
+                                const currentScale = obj.scaleX || 1;
+                                obj.set({
+                                    scaleX: currentScale * scale,
+                                    scaleY: currentScale * scale,
+                                    left: (obj.left - minX) * scale + (containerWidth - groupWidth * scale) / 2,
+                                    top: (obj.top - minY) * scale + (containerHeight - groupHeight * scale) / 2
+                                });
+
+                                fabricCanvas.add(obj);
+                            });
+
+                            fabricCanvas.renderAll();
                         });
-                        return null; // Skip adding text object if it's a photo placeholder
+
+                    } catch (error) {
+                        console.error('Error rendering template:', error);
+                        // Add fallback preview
+                        const text = new fabric.Text('Preview not available', {
+                            left: containerWidth / 2,
+                            top: containerHeight / 2,
+                            originX: 'center',
+                            originY: 'center',
+                            fontSize: 14,
+                            fill: '#999999'
+                        });
+                        fabricCanvas.add(text);
+                        fabricCanvas.renderAll();
                     }
+                } else {
+                    // Add placeholder for templates without data
+                    const text = new fabric.Text('No preview', {
+                        left: containerWidth / 2,
+                        top: containerHeight / 2,
+                        originX: 'center',
+                        originY: 'center',
+                        fontSize: 14,
+                        fill: '#999999'
+                    });
+                    fabricCanvas.add(text);
+                    fabricCanvas.renderAll();
                 }
-
-                // Maintain original styling if specified
-                obj.fill = obj.fill || '#000000';
-                obj.fontFamily = obj.fontFamily || 'Arial';
-                obj.lineHeight = obj.lineHeight || 1.2;
-                
-                // Scale position and size
-                obj.top = obj.top * scale;
-                obj.left = obj.left * scale;
-                obj.fontSize = (obj.fontSize || 16) * scale;
             }
-            return obj;
-        }).filter(Boolean); // Remove null entries (photo placeholders)
-
-        // Create and add objects to canvas
-        fabric.util.enlivenObjects(customizedTemplate.objects, (objects) => {
-            objects.forEach(obj => canvas.add(obj));
-            canvas.renderAll();
         });
+    }
+
+    customizeTextObject(textObj, wizardData) {
+        // Replace placeholder text with user data
+        const replacements = {
+            '{{firstName}}': wizardData.personalInfo.firstName || 'John',
+            '{{lastName}}': wizardData.personalInfo.lastName || 'Doe',
+            '{{title}}': wizardData.personalInfo.title || 'Position',
+            '{{company}}': wizardData.personalInfo.company || 'Company Name',
+            '{{phone}}': wizardData.contactInfo.phoneNumber || '(555) 555-5555',
+            '{{email}}': wizardData.contactInfo.email || 'email@example.com',
+            '{{website}}': wizardData.contactInfo.website || 'www.example.com',
+            '{{location}}': wizardData.contactInfo.location || 'City, Country'
+        };
+
+        let newText = textObj.text;
+        for (const [placeholder, value] of Object.entries(replacements)) {
+            newText = newText.replace(new RegExp(placeholder, 'g'), value);
+        }
+        textObj.set('text', newText);
+
+        // Ensure text is visible
+        if (!textObj.fill || textObj.fill === 'none') {
+            textObj.set('fill', '#000000');
+        }
     }
 
     setupStep1Listeners(dialog) {
@@ -475,7 +628,6 @@ class BusinessCardDisplay {
         const inputs = dialog.querySelectorAll('input[required]');
 
         inputs.forEach(input => {
-            input.classList.add('transition-all', 'duration-200');
             input.addEventListener('input', () => {
                 const allFilled = Array.from(inputs).every(input => input.value.trim() !== '');
                 continueBtn.disabled = !allFilled;
@@ -503,11 +655,10 @@ class BusinessCardDisplay {
         const closeBtn = dialog.querySelector('.dialog-close');
         const inputs = dialog.querySelectorAll('input[required]');
         const photoInput = dialog.querySelector('#photo');
-        const photoUploadLabel = dialog.querySelector('.photo-upload label');
-        photoUploadLabel.className = 'flex items-center justify-center w-full h-32 px-4 transition bg-white border-2 border-gray-300 border-dashed rounded-md appearance-none cursor-pointer hover:border-gray-400 focus:outline-none';
+        const photoPreview = dialog.querySelector('.photo-preview');
+        const uploadPrompt = dialog.querySelector('.upload-prompt');
 
         inputs.forEach(input => {
-            input.classList.add('transition-all', 'duration-200');
             input.addEventListener('input', () => {
                 const allFilled = Array.from(inputs).every(input => input.value.trim() !== '');
                 continueBtn.disabled = !allFilled;
@@ -517,8 +668,22 @@ class BusinessCardDisplay {
 
         photoInput.addEventListener('change', (e) => {
             if (e.target.files && e.target.files[0]) {
-                this.wizardData.contactInfo.photo = e.target.files[0];
-                dialog.querySelector('.photo-upload label span').textContent = 'Photo Selected';
+                const reader = new FileReader();
+                
+                reader.onload = (e) => {
+                    // Store the image data
+                    this.wizardData.contactInfo.photo = e.target.result;
+                    
+                    // Update preview
+                    const previewImg = photoPreview.querySelector('img');
+                    previewImg.src = e.target.result;
+                    
+                    // Show preview, hide prompt
+                    photoPreview.classList.remove('hidden');
+                    uploadPrompt.classList.add('hidden');
+                };
+                
+                reader.readAsDataURL(e.target.files[0]);
             }
         });
 
@@ -546,21 +711,52 @@ class BusinessCardDisplay {
         const continueBtn = dialog.querySelector('.btn-continue');
         const backBtn = dialog.querySelector('.btn-back');
         const closeBtn = dialog.querySelector('.dialog-close');
-        const templateGrid = dialog.querySelector('.business-card-templates-grid');
-        templateGrid.className = 'grid grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto p-4';
+        const templateCards = dialog.querySelectorAll('.template-card');
 
-        // Add template selection and color scheme selection logic here
-
-        continueBtn.addEventListener('click', () => {
-            // this.saveToIndexDBAndRedirect();
+        // Template selection
+        templateCards.forEach(card => {
+            card.addEventListener('click', () => {
+                // Remove selection from all cards
+                templateCards.forEach(c => {
+                    c.classList.remove('border-blue-500');
+                    c.classList.add('border-transparent');
+                });
+                
+                // Add selection to clicked card
+                card.classList.remove('border-transparent');
+                card.classList.add('border-blue-500');
+                
+                // Update selected template
+                const templateIndex = parseInt(card.dataset.templateIndex);
+                this.wizardData.designChoices.selectedTemplate = window.businessTemplates[templateIndex];
+                
+                // Enable continue button
+                continueBtn.disabled = false;
+                continueBtn.classList.remove('opacity-50');
+            });
         });
 
+        // Back button
         backBtn.addEventListener('click', () => {
             this.closeDialog(dialog);
             this.showStep2Dialog();
         });
 
+        // Close button
         closeBtn.addEventListener('click', () => this.closeDialog(dialog));
+
+        // Continue button
+        continueBtn.addEventListener('click', () => {
+            if (this.wizardData.designChoices.selectedTemplate) {
+                this.saveToIndexDBAndRedirect(this.wizardData.designChoices.selectedTemplate);
+            }
+        });
+
+        // Dialog back button (arrow)
+        dialog.querySelector('.dialog-back').addEventListener('click', () => {
+            this.closeDialog(dialog);
+            this.showStep2Dialog();
+        });
     }
 
     showDialog(dialog) {
@@ -618,9 +814,9 @@ class BusinessCardDisplay {
                 storeRequest.onsuccess = () => {
                     console.log(`Template ${existingData ? 'updated' : 'added'} successfully`);
                     if (window.location.href.includes('wp-admin')) {
-                        window.location.href = '../wp-content/plugins/Virtual-Graphics-Studio/edithor.html';
+                        window.location.href = '../wp-content/plugins/Virtual-Graphics-Studio/edithor.html?l=bc';
                     } else {
-                        window.location.href = '/wordpress/wp-content/plugins/Virtual-Graphics-Studio/edithor.html';
+                        window.location.href = '/wordpress/wp-content/plugins/Virtual-Graphics-Studio/edithor.html?l=bc';
                     }
                 };
             };
@@ -637,9 +833,9 @@ class BusinessCardDisplay {
         try {
             localStorage.setItem('currentTemplate', JSON.stringify(template));
             if (window.location.href.includes('wp-admin')) {
-                window.location.href = '../wp-content/plugins/Virtual-Graphics-Studio/edithor.html';
+                window.location.href = '../wp-content/plugins/Virtual-Graphics-Studio/edithor.html?l=bc';
             } else {
-                window.location.href = '/wordpress/wp-content/plugins/Virtual-Graphics-Studio/edithor.html';
+                window.location.href = '/wordpress/wp-content/plugins/Virtual-Graphics-Studio/edithor.html?l=bc';
             }
         } catch (error) {
             console.error('Error saving template:', error);

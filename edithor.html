@@ -16,9 +16,10 @@
         <nav class="top-nav">
             <div class="top-nav-section" style="margin-left: auto;">
 
-                <button class="pro-button" onclick="window.logoSaver.saveLogo()">
-                    <i class="fas fa-crown"></i> Save logo
-                </button>
+                <!-- <button class="pro-button" id="saveButton">
+                    <i class="fas fa-crown"></i> <span id="saveButtonText">Save</span>
+                </button> -->
+                
                 <div class="dropdown-container">
                     <div class="dropdown-item  has-submenu">
                         <span>
@@ -86,9 +87,6 @@
                         <button class="tool-btn" data-tool="image" title="Add Image (Ctrl+I)">
                             <i class="fas fa-image"></i>
                         </button>
-                        <!-- <button class="tool-btn" data-tool="crop" title="Crop Image (Ctrl+Shift+C)">
-                            <i class="fas fa-crop-alt"></i>
-                        </button> -->
                         <button class="tool-btn" data-tool="icon" title="Add Icon (Ctrl+Shift+I)">
                             <i class="fas fa-icons"></i>
                         </button>
@@ -118,9 +116,12 @@
                         <button class="tool-btn" data-tool="pan" title="Pan Tool (Ctrl+Space)">
                             <i class="fas fa-hand-paper"></i>
                         </button>
-                        <button class="tool-btn" data-action="fit" title="Fit to Screen (Ctrl+0)">
-                            <i class="fas fa-expand-arrows-alt"></i>
+                        <button class="tool-btn" data-tool="crop" title="Crop Image (Ctrl+Shift+C)">
+                            <i class="fas fa-crop-alt"></i>
                         </button>
+                        <!-- <button class="tool-btn" data-action="fit" title="Fit to Screen (Ctrl+0)">
+                            <i class="fas fa-expand-arrows-alt"></i>
+                        </button> -->
                     </div>
                 </div>
                 <!-- Advanced Tools Section -->
@@ -474,6 +475,7 @@
      <script src="./assets/js/edithor_js/var/LogoTemplet.js"></script>
      <script src="./assets/js/edithor_js/var/IconStore.js"></script>
      <script src="./assets/js/edithor_js/var/hints.js"></script>
+     <script src="./assets/js/edithor_js/var/BusinessTemplet.js"></script>
 
      <!-- add class listed here  -->
      <script src="./assets/js/edithor_js/EdithorCanves.js"></script>

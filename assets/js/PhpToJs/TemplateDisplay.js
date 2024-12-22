@@ -1252,9 +1252,9 @@ class TemplateDisplay {
         try {
             localStorage.setItem('currentTemplate', JSON.stringify(template));
             if (window.location.href.includes('wp-admin')) {
-                window.location.href = '../wp-content/plugins/Virtual-Graphics-Studio/edithor.html';
+                window.location.href = '../wp-content/plugins/Virtual-Graphics-Studio/edithor.html?l=logo';
             } else {
-                window.location.href = '/wordpress/wp-content/plugins/Virtual-Graphics-Studio/edithor.html';
+                window.location.href = '/wordpress/wp-content/plugins/Virtual-Graphics-Studio/edithor.html?l=logo';
             }
         } catch (error) {
             console.error('Error saving template:', error);

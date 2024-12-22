@@ -10,9 +10,9 @@
  */
 
 // Prevent direct access
-if (!defined('ABSPATH')) {
-    exit;
-}
+// if (!defined('ABSPATH')) {
+//     exit;
+// }
 
 // Define plugin constants
 define('VGD_PLUGIN_DIR', plugin_dir_path(__FILE__));
@@ -29,7 +29,10 @@ function vgd_autoload_classes() {
         'post/class-posts.php',
         'chat/class-ai-chat.php',
         'class-setting.php',
-        'brand/logo/class-logo-back.php',
+        'brand/base/class-item-base.php',
+        'brand/logo/class-logo.php',
+        'brand/business-card/class-business-card.php',
+        'brand/back.php'
     ];
 
     foreach ($classes as $class) {

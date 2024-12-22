@@ -1,8 +1,8 @@
 
 class TemplateManager {
-    constructor(canvas) {
+    constructor(canvas,template = []) {
         this.canvas = canvas;
-        this.templates = [];
+        this.templates =  template;
         this.currentCategory = 'all';
         this.sidebarOpen = false;
         this.previewCanvases = new Map();
@@ -84,15 +84,6 @@ class TemplateManager {
     }
 
     loadTemplates() {
-        // Load templates from the window.templates
-        if (window.templates) {
-            console.log('Loading templates from window.templates'); // Debug log
-            this.templates = window.templates;
-        } else {
-            console.warn('No templates found in window.templates');
-            this.templates = [];
-        }
-        
         this.updateCategories();
         this.renderTemplates();
     }
